@@ -18,18 +18,18 @@ void setChannel(uint8_t ch);
 void sendADC(uint16_t value);
 
 int main(void)
-{	
+{
 	setupADC();
 	setupUART();
-	
+
 	uint8_t val;
-	
+
 	sei();
-		
+
 	while(1)
-	{		
+	{
 		val = uart_getc();// & (0x7f);
-			
+
 		if(val == START)
 		{
 			ADCSRA |= (1 << ADSC); // start conversion
@@ -38,7 +38,7 @@ int main(void)
 		}
 		else if(val == NAME)
 		{
-			uart_puts("Rutherford");
+			uart_puts("Rutherford\n");
 		}
 		else if((val >= SET_CHANNEL_0) && (val <= SET_CHANNEL_3))
 		{
@@ -57,9 +57,9 @@ void sendADC(uint16_t value)
 	uint8_t high, low;
 	high = (value >> 8) & (0x03);
 	low = value;
-	
+
 	uart_putc(high);
-	uart_putc(low);	
+	uart_putc(low);
 }
 
 void setChannel(uint8_t ch)
@@ -80,7 +80,7 @@ void setupUART(void)
 {
 	PORTB &= ~(1 << UART_RX); // set low
 	DDRB &= ~(1 << UART_RX); // input
-	
+
 	PORTB |= (1 << UART_TX); // set high
 	DDRB |= (1 << UART_TX); // output
 }
