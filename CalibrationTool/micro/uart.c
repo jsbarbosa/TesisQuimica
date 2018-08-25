@@ -15,8 +15,7 @@ uart_getc(void)
 
 	sreg = SREG;
 	cli();
-	PORTB &= ~(1 << UART_RX);
-	DDRB &= ~(1 << UART_RX);
+	
 	__asm volatile(
 		" ldi r18, %[rxdelay2] \n\t" // 1.5 bit delay
 		" ldi %0, 0x80 \n\t" // bit shift counter
@@ -58,8 +57,7 @@ uart_putc(char c)
 
 	sreg = SREG;
 	cli();
-	PORTB |= 1 << UART_TX;
-	DDRB |= 1 << UART_TX;
+	
 	__asm volatile(
 		" cbi %[uart_port], %[uart_pin] \n\t" // start bit
 		" in r0, %[uart_port] \n\t"
@@ -92,5 +90,5 @@ uart_putc(char c)
 void
 uart_puts(const char *s)
 {
-     	while (*s) uart_putc(*(s++));
+	while (*s) uart_putc(*(s++));
 }
