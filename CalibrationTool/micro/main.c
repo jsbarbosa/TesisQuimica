@@ -8,9 +8,9 @@
 #define SET_CHANNEL_1 0x04
 #define SET_CHANNEL_2 0x05
 #define SET_CHANNEL_3 0x06
-
 #define NAME 0x0f
 
+#define N_MEAN 10
 
 void setupADC(void);
 void setupUART(void);
@@ -22,8 +22,9 @@ int main(void)
 	setupADC();
 	setupUART();
 
-	uint8_t val;
-
+	uint8_t val, i;
+	uint32_t mean;
+	
 	sei();
 
 	while(1)
@@ -32,9 +33,14 @@ int main(void)
 
 		if(val == START)
 		{
-			ADCSRA |= (1 << ADSC); // start conversion
-			while(ADCSRA & (1 << ADSC));
-			sendADC(ADC);
+			mean = 0;
+			for(i = 0; i < N_MEAN; i++)
+			{
+				ADCSRA |= (1 << ADSC); // start conversion
+				while(ADCSRA & (1 << ADSC));
+				mean += ADC;
+			}
+			sendADC(mean / N_MEAN);
 		}
 		else if(val == NAME)
 		{
@@ -72,7 +78,9 @@ void setupADC(void)
 {
 	/*setup ADC*/
 	ADMUX |= (1 << REFS0); // internal reference
-	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // set division factor to 128
+	//~ ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // set division factor to 128
+	ADCSRA |= (1 << ADPS2) | (1 << ADPS1); // set division factor to 64
+	//~ ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // set division factor to 8
 	ADCSRA |= (1 << ADEN);
 }
 
