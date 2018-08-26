@@ -1,5 +1,7 @@
 import sys
 import time
+
+import __images__
 from com import initPort, findDevices, setChannel, getVoltage, setGlobalSerial, close
 
 import pyqtgraph as pg
@@ -280,12 +282,8 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Fusion')) # <- Choose the style
 
-    # splash_pix = QtGui.QPixmap(':/splash.png').scaledToWidth(600)
-    # splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-    # splash.show()
-
-    # icon = QtGui.QIcon(':/abacus_small.ico')
-    # app.setWindowIcon(icon)
+    icon = QtGui.QIcon(':/icon.ico')
+    app.setWindowIcon(icon)
     app.processEvents()
 
     # if abacus.CURRENT_OS == 'win32':
@@ -293,12 +291,8 @@ if __name__ == '__main__':
     #     myappid = 'abacus.abacus.01' # arbitrary string
     #     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-    # sleep(1)
-    #
-    # softwareUpdate(splash)
-    # splash.close()
-
     main = MainWindow()
+    main.setWindowIcon(icon)
     main.show()
     app.exec_()
 

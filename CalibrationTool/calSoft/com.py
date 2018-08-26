@@ -60,8 +60,9 @@ def findDevices():
             ser = initPort(port)
             devs.append(port)
             ser.close()
-        except:
-            pass
+        except Exception as e:
+            print(e)
+            # pass
     return devs
 
 def initPort(port):
