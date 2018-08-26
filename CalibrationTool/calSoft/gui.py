@@ -155,10 +155,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.start_widget.clicked.connect(self.startPush)
         self.clear_widget.clicked.connect(self.clearPlot)
 
-        # self.sampling_timer = QtCore.QTimer()
-        # self.sampling_timer.setInterval(self.SAMPLING_DEFAULT)
-        # self.sampling_timer.timeout.connect(self.samplingTimerTimeout)
-
         self.update_plots_timer = QtCore.QTimer()
         self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
         self.update_plots_timer.timeout.connect(self.updatePlots)
