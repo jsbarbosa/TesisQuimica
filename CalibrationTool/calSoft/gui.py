@@ -1,6 +1,6 @@
 import sys
 import time
-from com import initPort, findDevices, setChannel, getVoltage, setGlobalSerial
+from com import initPort, findDevices, setChannel, getVoltage, setGlobalSerial, close
 
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -30,11 +30,6 @@ class DataHolder(object):
     def __len__(self):
         return len(self.x)
 
-    # def getXDiff(self):
-    #     global START_TIME
-    #     diff = [self.x[i] - START_TIME for i in range(len(self))]
-    #     return diff
-
 class FindDevicesThread(QtCore.QThread):
     def __init__(self, parent):
         super(QtCore.QThread, self).__init__()
@@ -54,6 +49,21 @@ class FindDevicesThread(QtCore.QThread):
             setGlobalSerial(None)
         QtWidgets.QApplication.restoreOverrideCursor()
 
+# class UpdatePlotsThread(QtCore.QThread):
+#     def __init__(self, parent):
+#         super(QtCore.QThread, self).__init__()
+#         self.parent = parent
+#
+#     def run(self):
+#         channels = self.parent.getChannels()
+#         data = [(getattr(self.parent, "data%d" % c), getattr(self.parent, "data%d_line" % c)) for c in channels]
+#
+#         print("HERRE")
+#         for h, l in data:
+#             l.setData(h.getX(), h.getY())
+
+
+
 class MainWindow(QtWidgets.QMainWindow):
     FIND_LABEL = "Find device"
     FOUND_LABEL = "Device found"
@@ -62,9 +72,11 @@ class MainWindow(QtWidgets.QMainWindow):
     STOP_LABEL = "Stop"
 
     SAMPLING_LABEL = "Sampling time (ms)"
-    SAMPLING_MIN = 10
-    SAMPLING_MAX = 10000
+    SAMPLING_MIN = 50
+    SAMPLING_MAX = 1000
     SAMPLING_DEFAULT = 250
+
+    MINIMUM_PLOT_UPDATE = 250
 
     def __init__(self):
         super(QtWidgets.QMainWindow, self).__init__()
@@ -87,10 +99,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.find_device_widget = QtWidgets.QPushButton(self.FIND_LABEL)
         self.start_widget = QtWidgets.QPushButton(self.START_LABEL)
 
-        self.channel_0_widget = QtWidgets.QCheckBox("Channel 0")
-        self.channel_1_widget = QtWidgets.QCheckBox("Channel 1")
-        self.channel_2_widget = QtWidgets.QCheckBox("Channel 2")
-        self.channel_3_widget = QtWidgets.QCheckBox("Channel 3")
+        self.channel_0_widget = QtWidgets.QCheckBox("Ch 0")
+        self.channel_1_widget = QtWidgets.QCheckBox("Ch 1")
+        self.channel_2_widget = QtWidgets.QCheckBox("Ch 2")
+        self.channel_3_widget = QtWidgets.QCheckBox("Ch 3")
 
         self.clear_widget = QtWidgets.QPushButton("Clear plot")
 
@@ -131,6 +143,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sampling_timer.setInterval(self.SAMPLING_DEFAULT)
         self.sampling_timer.timeout.connect(self.samplingTimerTimeout)
 
+        self.update_plots_timer = QtCore.QTimer()
+        self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
+        self.update_plots_timer.timeout.connect(self.updatePlots)
+
         self.enableOnDevice(False)
 
         self.data0 = DataHolder()
@@ -145,13 +161,26 @@ class MainWindow(QtWidgets.QMainWindow):
                 setChannel(channel)
                 holder = getattr(self, "data%d" % channel)
                 holder.addValue(getVoltage())
-                line = getattr(self, "data%d_line" % channel)
-                line.setData(holder.getX(), holder.getY())
+
         except Exception as e:
             self.errorWindow(e)
 
+    def updatePlots(self):
+        # self.update_thread = UpdatePlotsThread(self)
+        # self.update_thread.start()
+        channels = self.getChannels()
+        data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
+
+        for h, l in data:
+            l.setData(h.getX(), h.getY())
+
+
     def changeSampling(self, value):
         self.sampling_timer.setInterval(value)
+        if value > self.MINIMUM_PLOT_UPDATE:
+            self.update_plots_timer.setInterval(value)
+        else:
+            self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
 
     def findDevicesPush(self):
         self.find_thread = FindDevicesThread(self)
@@ -163,6 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.start_widget.text() == self.START_LABEL:
             self.enableOnStart(False)
             self.sampling_timer.start()
+            self.update_plots_timer.start()
             self.start_widget.setText(self.STOP_LABEL)
 
             if START_TIME == 0:
@@ -170,6 +200,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.enableOnStart(True)
             self.sampling_timer.stop()
+            self.update_plots_timer.stop()
             self.start_widget.setText(self.START_LABEL)
 
     def enableOnDevice(self, enable):
@@ -197,7 +228,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def noDevice(self):
         self.sampling_timer.stop()
+        self.update_plots_timer.stop()
         self.find_device_widget.setText(self.FIND_LABEL)
+        self.start_widget.setText(self.START_LABEL)
         self.enableOnDevice(False)
 
     def clearPlot(self):
@@ -235,7 +268,6 @@ class MainWindow(QtWidgets.QMainWindow):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 
-
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Fusion')) # <- Choose the style
@@ -261,23 +293,5 @@ if __name__ == '__main__':
     main = MainWindow()
     main.show()
     app.exec_()
-        # frame = QtWidgets.QFrame()
-        # frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        # frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        #
-        # horizontalLayout =  QtWidgets.QHBoxLayout(frame)
-        # label = QtWidgets.QLabel("Save as:")
-        #
-        # self.save_as_lineEdit = ClickableLineEdit()
-        # self.save_as_lineEdit.clicked.connect(self.chooseFile)
-        #
-        # self.save_as_button = QtWidgets.QPushButton("Open")
-        #
-        # horizontalLayout.addWidget(label)
-        # horizontalLayout.addWidget(self.save_as_lineEdit)
-        # horizontalLayout.addWidget(self.save_as_button)
-        #
-        # layout.addWidget(frame)
-        #
-        # frame2 = QtWidgets.QFrame()
-        # layout2 = QtWidgets.QHBoxLayout(frame2)
+
+    close()

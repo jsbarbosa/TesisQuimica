@@ -16,6 +16,8 @@ SERIAL = None
 
 V_REF = 1.1
 
+LAST_CHANNEL = -1
+
 class NoActiveSerialException(Exception):
     """
         There is no serial port active.
@@ -71,14 +73,16 @@ def initPort(port):
         raise(InvalidCalibrationPort(port))
 
 def setChannel(channel):
-    global SERIAL
-    if (channel <= 3) and (channel >= 0):
-        try:
-            SERIAL.write([SET_CHANNEL_0 + channel])
-        except AttributeError:
-            raise(NoActiveSerialException())
-    else:
-        raise(Exception("%d is not a valid channel."%channel))
+    global SERIAL, LAST_CHANNEL
+    if LAST_CHANNEL != channel:
+        LAST_CHANNEL = channel
+        if (channel <= 3) and (channel >= 0):
+            try:
+                SERIAL.write([SET_CHANNEL_0 + channel])
+            except AttributeError:
+                raise(NoActiveSerialException())
+        else:
+            raise(Exception("%d is not a valid channel."%channel))
 
 def getADC():
     for i in range(5):
@@ -99,6 +103,11 @@ def getVoltage():
 def setGlobalSerial(serial):
     global SERIAL
     SERIAL = serial
+
+def close():
+    global SERIAL
+    try: SERIAL.close()
+    except: pass
 
 if __name__ == '__main__':
     devs = findDevices()
