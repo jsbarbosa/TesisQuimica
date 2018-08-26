@@ -19,7 +19,7 @@ PRJ = main
 # avr mcu
 MCU = attiny13
 # mcu clock frequency
-CLK = 1200000
+CLK = 9600000
 # avr programmer (and port if necessary)
 # e.g. PRG = usbtiny -or- PRG = arduino -P /dev/tty.usbmodem411
 PRG = usbtiny
@@ -30,7 +30,7 @@ PRG = usbtiny
 # HFU = 0xFF
 # EFU = 0xFF
 
-LFU = 0x6A
+LFU = 0x7A
 HFU = 0xFF
 # program source files (not including external libraries)
 SRC = $(PRJ).cpp
