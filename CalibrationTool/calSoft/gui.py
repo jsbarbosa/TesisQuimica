@@ -49,20 +49,32 @@ class FindDevicesThread(QtCore.QThread):
             setGlobalSerial(None)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-# class UpdatePlotsThread(QtCore.QThread):
-#     def __init__(self, parent):
-#         super(QtCore.QThread, self).__init__()
-#         self.parent = parent
-#
-#     def run(self):
-#         channels = self.parent.getChannels()
-#         data = [(getattr(self.parent, "data%d" % c), getattr(self.parent, "data%d_line" % c)) for c in channels]
-#
-#         print("HERRE")
-#         for h, l in data:
-#             l.setData(h.getX(), h.getY())
+class RequestDataThread(QtCore.QThread):
+    def __init__(self, parent, sleep_time):
+        super(QtCore.QThread, self).__init__()
+        self.parent = parent
+        self.time = sleep_time / 1e3
+        self.RUN = True
+        self.exception = None
 
+    def run(self):
+        while self.RUN:
+            time.sleep(self.time)
+            channels = self.parent.getChannels()
+            try:
+                for channel in channels:
+                    setChannel(channel)
+                    holder = getattr(self.parent, "data%d" % channel)
+                    holder.addValue(getVoltage())
+            except Exception as e:
+                self.stop()
+                self.exception = e
 
+    def stop(self):
+        self.RUN = False
+
+    def setTime(self, time):
+        self.time = time / 1e3
 
 class MainWindow(QtWidgets.QMainWindow):
     FIND_LABEL = "Find device"
@@ -72,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow):
     STOP_LABEL = "Stop"
 
     SAMPLING_LABEL = "Sampling time (ms)"
-    SAMPLING_MIN = 50
+    SAMPLING_MIN = 10
     SAMPLING_MAX = 1000
     SAMPLING_DEFAULT = 250
 
@@ -103,6 +115,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.channel_1_widget = QtWidgets.QCheckBox("Ch 1")
         self.channel_2_widget = QtWidgets.QCheckBox("Ch 2")
         self.channel_3_widget = QtWidgets.QCheckBox("Ch 3")
+        self.channel_0_widget.setCheckState(2)
+        self.channel_1_widget.setCheckState(2)
+        self.channel_2_widget.setCheckState(2)
+        self.channel_3_widget.setCheckState(2)
 
         self.clear_widget = QtWidgets.QPushButton("Clear plot")
 
@@ -139,13 +155,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.start_widget.clicked.connect(self.startPush)
         self.clear_widget.clicked.connect(self.clearPlot)
 
-        self.sampling_timer = QtCore.QTimer()
-        self.sampling_timer.setInterval(self.SAMPLING_DEFAULT)
-        self.sampling_timer.timeout.connect(self.samplingTimerTimeout)
+        # self.sampling_timer = QtCore.QTimer()
+        # self.sampling_timer.setInterval(self.SAMPLING_DEFAULT)
+        # self.sampling_timer.timeout.connect(self.samplingTimerTimeout)
 
         self.update_plots_timer = QtCore.QTimer()
         self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
         self.update_plots_timer.timeout.connect(self.updatePlots)
+
+        self.data_thread = RequestDataThread(self, self.SAMPLING_DEFAULT)
 
         self.enableOnDevice(False)
 
@@ -154,29 +172,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data2 = DataHolder()
         self.data3 = DataHolder()
 
-    def samplingTimerTimeout(self):
-        channels = self.getChannels()
-        try:
-            for channel in channels:
-                setChannel(channel)
-                holder = getattr(self, "data%d" % channel)
-                holder.addValue(getVoltage())
-
-        except Exception as e:
-            self.errorWindow(e)
-
     def updatePlots(self):
-        # self.update_thread = UpdatePlotsThread(self)
-        # self.update_thread.start()
-        channels = self.getChannels()
-        data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
+        if self.data_thread.exception != None:
+            self.errorWindow(self.data_thread.exception)
+        else:
+            channels = self.getChannels()
+            data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
 
-        for h, l in data:
-            l.setData(h.getX(), h.getY())
-
+            for h, l in data:
+                l.setData(h.getX(), h.getY())
 
     def changeSampling(self, value):
-        self.sampling_timer.setInterval(value)
+        # self.sampling_timer.setInterval(value)
+        self.data_thread.setTime(value)
         if value > self.MINIMUM_PLOT_UPDATE:
             self.update_plots_timer.setInterval(value)
         else:
@@ -191,7 +199,9 @@ class MainWindow(QtWidgets.QMainWindow):
         global START_TIME
         if self.start_widget.text() == self.START_LABEL:
             self.enableOnStart(False)
-            self.sampling_timer.start()
+            self.data_thread = RequestDataThread(self, self.sampling_widget.value())
+            self.data_thread.start()
+            # self.sampling_timer.start()
             self.update_plots_timer.start()
             self.start_widget.setText(self.STOP_LABEL)
 
@@ -199,7 +209,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 START_TIME = time.time()
         else:
             self.enableOnStart(True)
-            self.sampling_timer.stop()
+            self.data_thread.stop()
+            # self.sampling_timer.stop()
             self.update_plots_timer.stop()
             self.start_widget.setText(self.START_LABEL)
 
@@ -227,7 +238,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.enableOnDevice(True)
 
     def noDevice(self):
-        self.sampling_timer.stop()
+        self.data_thread.stop()
+        # self.sampling_timer.stop()
         self.update_plots_timer.stop()
         self.find_device_widget.setText(self.FIND_LABEL)
         self.start_widget.setText(self.START_LABEL)
