@@ -14,10 +14,9 @@ class DataHolder(object):
         self.x = []
         self.y = []
 
-    def addValue(self, value):
-        global START_TIME
-        self.y.append(value)
-        self.x.append(time.time() - START_TIME)
+    def addValue(self, x_value, y_value):
+        self.x.append(x_value)
+        self.y.append(y_value)
 
     def getX(self):
         return self.x
@@ -52,22 +51,25 @@ class FindDevicesThread(QtCore.QThread):
         QtWidgets.QApplication.restoreOverrideCursor()
 
 class RequestDataThread(QtCore.QThread):
+    ADJUST_TIME = 8
     def __init__(self, parent, sleep_time):
         super(QtCore.QThread, self).__init__()
         self.parent = parent
-        self.time = sleep_time / 1e3
+        self.time = (sleep_time - self.ADJUST_TIME)/ 1e3
         self.RUN = True
         self.exception = None
 
     def run(self):
+        global START_TIME
         while self.RUN:
             time.sleep(self.time)
             channels = self.parent.getChannels()
+            now = time.time() - START_TIME
             try:
                 for channel in channels:
                     setChannel(channel)
                     holder = getattr(self.parent, "data%d" % channel)
-                    holder.addValue(getVoltage())
+                    holder.addValue(now, getVoltage())
             except Exception as e:
                 self.stop()
                 self.exception = e
@@ -76,7 +78,7 @@ class RequestDataThread(QtCore.QThread):
         self.RUN = False
 
     def setTime(self, time):
-        self.time = time / 1e3
+        self.time = (time - self.ADJUST_TIME) / 1e3
 
 class MainWindow(QtWidgets.QMainWindow):
     FIND_LABEL = "Find device"
@@ -88,6 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
     SAMPLING_LABEL = "Sampling time (ms)"
     SAMPLING_MIN = 10
     SAMPLING_MAX = 1000
+    SAMPLING_STEP = 10
     SAMPLING_DEFAULT = 250
 
     MINIMUM_PLOT_UPDATE = 250
@@ -108,6 +111,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sampling_widget = QtWidgets.QSpinBox()
         self.sampling_widget.setMaximum(self.SAMPLING_MAX)
         self.sampling_widget.setMinimum(self.SAMPLING_MIN)
+        self.sampling_widget.setSingleStep(self.SAMPLING_STEP)
         self.sampling_widget.setValue(self.SAMPLING_DEFAULT)
 
         self.find_device_widget = QtWidgets.QPushButton(self.FIND_LABEL)
@@ -145,11 +149,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adc_plot.setLabel('left', "Voltage", units = 'V')
         self.adc_plot.setLabel('bottom', "Time", units = 's')
 
+        symbol = None
         symbolSize = 5
-        self.data0_line = self.adc_plot.plot(pen = "b", symbol='o', symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Channel 0")
-        self.data1_line = self.adc_plot.plot(pen = "m", symbol='o', symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Channel 1")
-        self.data2_line = self.adc_plot.plot(pen = "g", symbol='o', symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Channel 2")
-        self.data3_line = self.adc_plot.plot(pen = "r", symbol='o', symbolPen = "r", symbolBrush="r", symbolSize=symbolSize, name="Channel 3")
+        self.data0_line = self.adc_plot.plot(pen = "b", symbol = symbol, symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Channel 0")
+        self.data1_line = self.adc_plot.plot(pen = "m", symbol = symbol, symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Channel 1")
+        self.data2_line = self.adc_plot.plot(pen = "g", symbol = symbol, symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Channel 2")
+        self.data3_line = self.adc_plot.plot(pen = "r", symbol = symbol, symbolPen = "r", symbolBrush="r", symbolSize=symbolSize, name="Channel 3")
 
         #### signals
         self.sampling_widget.valueChanged.connect(self.changeSampling)
@@ -178,6 +183,7 @@ class MainWindow(QtWidgets.QMainWindow):
             data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
 
             for h, l in data:
+                l.clear()
                 l.setData(h.getX(), h.getY())
 
     def changeSampling(self, value):
