@@ -7,17 +7,20 @@ from com import initPort, findDevices, setChannel, getVoltage, setGlobalSerial, 
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import numpy as np
+
 START_TIME = 0
 
 class DataHolder(object):
     def __init__(self):
         self.x = []
         self.y = []
+        self.freqs = [0] * 3
+        # self.filtered = []
 
-    def addValue(self, value):
-        global START_TIME
-        self.y.append(value)
-        self.x.append(time.time() - START_TIME)
+    def addValue(self, x_value, y_value):
+        self.x.append(x_value)
+        self.y.append(y_value)
 
     def getX(self):
         return self.x
@@ -25,9 +28,65 @@ class DataHolder(object):
     def getY(self):
         return self.y
 
+    def getData(self):
+        x = np.array(self.x).copy()
+        y = np.array(self.y).copy()#self.filtered
+        n_x = len(x)
+        n_y = len(y)
+        if n_x == n_y:
+            return x, y
+        elif n_x > n_y:
+            return x[:-1], y
+        else:
+            return x, y[:-1]
+
     def clear(self):
         self.x = []
         self.y = []
+        # self.filtered = []
+
+    def filterData(self):
+        """Apply a length-k median filter to a 1D array x.
+        Boundaries are extended by repeating endpoints.
+        """
+        if len(self.y):
+            k = 3
+            temp = self.y.copy()
+            k2 = (k - 1) // 2
+            y = np.zeros ((len (temp), k))
+
+            y[:,k2] = temp
+            for i in range (k2):
+                j = k2 - i
+                y[j:,i] = temp[:-j]
+                y[:j,i] = temp[0]
+                y[:-j,-(i+1)] = temp[j:]
+                y[-j:,-(i+1)] = temp[-1]
+            self.filtered = np.median (y, axis=1)
+            return self.filtered
+        else:
+            return []
+
+    def getFrequency(self):
+        x, y = self.getData()
+        if len(x) > 3:
+            try:
+                x = np.array(x)
+                pos = np.where(x > (x[-1] - 5))[0]
+                dt = np.diff(x[pos]).mean()
+                fft = abs(np.fft.rfft(y[pos]))
+                fft[0] = 0
+                freqs = np.fft.rfftfreq(len(fft), d = dt)
+                max = fft.argmax()
+                freq = freqs[max]
+                self.freqs.append(freq)
+                del self.freqs[0]
+
+                return np.mean(self.freqs)
+            except IndexError:
+                return 0
+        else:
+            return 0
 
     def __len__(self):
         return len(self.x)
@@ -52,22 +111,25 @@ class FindDevicesThread(QtCore.QThread):
         QtWidgets.QApplication.restoreOverrideCursor()
 
 class RequestDataThread(QtCore.QThread):
+    ADJUST_TIME = 8
     def __init__(self, parent, sleep_time):
         super(QtCore.QThread, self).__init__()
         self.parent = parent
-        self.time = sleep_time / 1e3
+        self.time = (sleep_time - self.ADJUST_TIME)/ 1e3
         self.RUN = True
         self.exception = None
 
     def run(self):
+        global START_TIME
         while self.RUN:
             time.sleep(self.time)
             channels = self.parent.getChannels()
+            now = time.time() - START_TIME
             try:
                 for channel in channels:
                     setChannel(channel)
                     holder = getattr(self.parent, "data%d" % channel)
-                    holder.addValue(getVoltage())
+                    holder.addValue(now, getVoltage())
             except Exception as e:
                 self.stop()
                 self.exception = e
@@ -76,7 +138,7 @@ class RequestDataThread(QtCore.QThread):
         self.RUN = False
 
     def setTime(self, time):
-        self.time = time / 1e3
+        self.time = (time - self.ADJUST_TIME) / 1e3
 
 class MainWindow(QtWidgets.QMainWindow):
     FIND_LABEL = "Find device"
@@ -88,6 +150,7 @@ class MainWindow(QtWidgets.QMainWindow):
     SAMPLING_LABEL = "Sampling time (ms)"
     SAMPLING_MIN = 10
     SAMPLING_MAX = 1000
+    SAMPLING_STEP = 10
     SAMPLING_DEFAULT = 250
 
     MINIMUM_PLOT_UPDATE = 250
@@ -108,6 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sampling_widget = QtWidgets.QSpinBox()
         self.sampling_widget.setMaximum(self.SAMPLING_MAX)
         self.sampling_widget.setMinimum(self.SAMPLING_MIN)
+        self.sampling_widget.setSingleStep(self.SAMPLING_STEP)
         self.sampling_widget.setValue(self.SAMPLING_DEFAULT)
 
         self.find_device_widget = QtWidgets.QPushButton(self.FIND_LABEL)
@@ -124,6 +188,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.clear_widget = QtWidgets.QPushButton("Clear plot")
 
+        self.channel_0_freq = QtWidgets.QLabel("0 Hz")
+        self.channel_1_freq = QtWidgets.QLabel("0 Hz")
+        self.channel_2_freq = QtWidgets.QLabel("0 Hz")
+        self.channel_3_freq = QtWidgets.QLabel("0 Hz")
+
         self.settings_layout.addRow(QtWidgets.QLabel(self.SAMPLING_LABEL), self.sampling_widget)
         self.settings_layout.addWidget(self.channel_0_widget)
         self.settings_layout.addWidget(self.channel_1_widget)
@@ -131,6 +200,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_layout.addWidget(self.channel_3_widget)
         self.settings_layout.addRow(self.find_device_widget, self.start_widget)
         self.settings_layout.addRow(self.clear_widget)
+
+        self.settings_layout.addRow(QtWidgets.QLabel("Channel 0:"), self.channel_0_freq)
+        self.settings_layout.addRow(QtWidgets.QLabel("Channel 1:"), self.channel_1_freq)
+        self.settings_layout.addRow(QtWidgets.QLabel("Channel 2:"), self.channel_2_freq)
+        self.settings_layout.addRow(QtWidgets.QLabel("Channel 3:"), self.channel_3_freq)
 
         self.main_layout.addWidget(self.settings_frame)
 
@@ -145,11 +219,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adc_plot.setLabel('left', "Voltage", units = 'V')
         self.adc_plot.setLabel('bottom', "Time", units = 's')
 
+        symbol = "o" #
         symbolSize = 5
-        self.data0_line = self.adc_plot.plot(pen = "b", symbol='o', symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Channel 0")
-        self.data1_line = self.adc_plot.plot(pen = "m", symbol='o', symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Channel 1")
-        self.data2_line = self.adc_plot.plot(pen = "g", symbol='o', symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Channel 2")
-        self.data3_line = self.adc_plot.plot(pen = "r", symbol='o', symbolPen = "r", symbolBrush="r", symbolSize=symbolSize, name="Channel 3")
+        self.data0_line = self.adc_plot.plot(pen = "b", symbol = symbol, symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Channel 0")
+        self.data1_line = self.adc_plot.plot(pen = "m", symbol = symbol, symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Channel 1")
+        self.data2_line = self.adc_plot.plot(pen = "g", symbol = symbol, symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Channel 2")
+        self.data3_line = self.adc_plot.plot(pen = "r", symbol = symbol, symbolPen = "r", symbolBrush="r", symbolSize=symbolSize, name="Channel 3")
 
         #### signals
         self.sampling_widget.valueChanged.connect(self.changeSampling)
@@ -174,11 +249,14 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.data_thread.exception != None:
             self.errorWindow(self.data_thread.exception)
         else:
-            channels = self.getChannels()
-            data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
-
-            for h, l in data:
-                l.setData(h.getX(), h.getY())
+            channels = [0, 1, 2, 3]#self.getChannels()
+            data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c), getattr(self, "channel_%d_freq"%c)) for c in channels]
+            for h, l, label in data:
+                l.clear()
+                # h.filterData()
+                l.setData(*h.getData())
+                f = h.getFrequency()
+                label.setText("%.2f Hz"%f)
 
     def changeSampling(self, value):
         # self.sampling_timer.setInterval(value)
