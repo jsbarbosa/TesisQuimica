@@ -10,7 +10,7 @@
 #define SET_CHANNEL_3 0x06
 #define NAME 0x0f
 
-#define N_MEAN 10
+#define N_MEAN 1
 
 void setupADC(void);
 void setupUART(void);
