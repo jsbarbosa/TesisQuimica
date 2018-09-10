@@ -164,7 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.channel_1_widget = QtWidgets.QCheckBox("Ch 1")
         self.channel_2_widget = QtWidgets.QCheckBox("Ch 2")
         self.channel_3_widget = QtWidgets.QCheckBox("Ch 3")
-        self.channel_0_widget.setCheckState(2)
+        self.channel_0_widget.setCheckState(0)
         self.channel_1_widget.setCheckState(2)
         self.channel_2_widget.setCheckState(2)
         self.channel_3_widget.setCheckState(2)
