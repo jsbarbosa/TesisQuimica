@@ -67,26 +67,8 @@ class DataHolder(object):
         else:
             return []
 
-    def getFrequency(self):
-        x, y = self.getData()
-        if len(x) > 3:
-            try:
-                x = np.array(x)
-                pos = np.where(x > (x[-1] - 5))[0]
-                dt = np.diff(x[pos]).mean()
-                fft = abs(np.fft.rfft(y[pos]))
-                fft[0] = 0
-                freqs = np.fft.rfftfreq(len(fft), d = dt)
-                max = fft.argmax()
-                freq = freqs[max]
-                self.freqs.append(freq)
-                del self.freqs[0]
-
-                return np.mean(self.freqs)
-            except IndexError:
-                return 0
-        else:
-            return 0
+    def getLast(self):
+        return self.y[-1]
 
     def __len__(self):
         return len(self.x)
@@ -111,7 +93,7 @@ class FindDevicesThread(QtCore.QThread):
         QtWidgets.QApplication.restoreOverrideCursor()
 
 class RequestDataThread(QtCore.QThread):
-    ADJUST_TIME = 8
+    ADJUST_TIME = 53
     def __init__(self, parent, sleep_time):
         super(QtCore.QThread, self).__init__()
         self.parent = parent
@@ -122,14 +104,15 @@ class RequestDataThread(QtCore.QThread):
     def run(self):
         global START_TIME
         while self.RUN:
-            time.sleep(self.time)
             channels = self.parent.getChannels()
-            now = time.time() - START_TIME
             try:
                 for channel in channels:
+                    now = time.time() - START_TIME
                     setChannel(channel)
                     holder = getattr(self.parent, "data%d" % channel)
                     holder.addValue(now, getVoltage())
+                    time.sleep(self.time)
+
             except Exception as e:
                 self.stop()
                 self.exception = e
@@ -148,12 +131,12 @@ class MainWindow(QtWidgets.QMainWindow):
     STOP_LABEL = "Stop"
 
     SAMPLING_LABEL = "Sampling time (ms)"
-    SAMPLING_MIN = 250
-    SAMPLING_MAX = 1000
-    SAMPLING_STEP = 50
-    SAMPLING_DEFAULT = 250
+    SAMPLING_MIN = 100
+    SAMPLING_MAX = 10000
+    SAMPLING_STEP = 100
+    SAMPLING_DEFAULT = 500
 
-    MINIMUM_PLOT_UPDATE = 250
+    MINIMUM_PLOT_UPDATE = 500
 
     def __init__(self):
         super(QtWidgets.QMainWindow, self).__init__()
@@ -188,10 +171,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.clear_widget = QtWidgets.QPushButton("Clear plot")
 
-        self.channel_0_freq = QtWidgets.QLabel("0 Hz")
-        self.channel_1_freq = QtWidgets.QLabel("0 Hz")
-        self.channel_2_freq = QtWidgets.QLabel("0 Hz")
-        self.channel_3_freq = QtWidgets.QLabel("0 Hz")
+        self.table = QtWidgets.QTableWidget()
+        self.table.setRowCount(4)
+        self.table.setColumnCount(4)
+
+        self.table.setVerticalHeaderLabels(["C0", "C1", "C2", "C3"])
+        self.table.setHorizontalHeaderLabels(["T (°C)", "Measure (V)", "m (V/°C)", "b (V)"])
+
+        for j in range(4):
+            i0 = QtWidgets.QTableWidgetItem("0.0000")
+            i3 = QtWidgets.QTableWidgetItem("0.00")
+            i1 = QtWidgets.QLineEdit("0.0100")
+            i2 = QtWidgets.QLineEdit("0.0000")
+
+            i0.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            i1.setValidator(QtGui.QDoubleValidator(-1, 1, 4))
+            i2.setValidator(QtGui.QDoubleValidator(-1, 1, 4))
+            i3.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+
+            self.table.setItem(j, 0, i3)
+            self.table.setCellWidget(j, 2, i1)
+            self.table.setCellWidget(j, 3, i2)
+            self.table.setItem(j, 1, i0)
+
+        self.table.resizeColumnsToContents()
+        self.table.resizeRowsToContents()
 
         self.settings_layout.addRow(QtWidgets.QLabel(self.SAMPLING_LABEL), self.sampling_widget)
         self.settings_layout.addWidget(self.channel_0_widget)
@@ -201,11 +205,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_layout.addRow(self.find_device_widget, self.start_widget)
         self.settings_layout.addRow(self.clear_widget)
 
-        self.settings_layout.addRow(QtWidgets.QLabel("Channel 0:"), self.channel_0_freq)
-        self.settings_layout.addRow(QtWidgets.QLabel("Channel 1:"), self.channel_1_freq)
-        self.settings_layout.addRow(QtWidgets.QLabel("Channel 2:"), self.channel_2_freq)
-        self.settings_layout.addRow(QtWidgets.QLabel("Channel 3:"), self.channel_3_freq)
-
+        self.settings_layout.addRow(self.table)
         self.main_layout.addWidget(self.settings_frame)
 
         ### pyqtgraph
@@ -216,7 +216,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adc_plot = self.adc_plot_widget.addPlot()
         self.adc_plot.addLegend()
 
-        self.adc_plot.setLabel('left', "Voltage", units = 'V')
+        self.adc_plot.setLabel('left', "Temperature", units = '°C')
         self.adc_plot.setLabel('bottom', "Time", units = 's')
 
         symbol = "o" #
@@ -249,14 +249,24 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.data_thread.exception != None:
             self.errorWindow(self.data_thread.exception)
         else:
-            channels = [0, 1, 2, 3]#self.getChannels()
-            data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c), getattr(self, "channel_%d_freq"%c)) for c in channels]
-            for h, l, label in data:
-                l.clear()
-                # h.filterData()
-                l.setData(*h.getData())
-                f = h.getFrequency()
-                label.setText("%.2f Hz"%f)
+            channels = [0, 1, 2, 3]
+            data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
+            for (i, (h, l)) in enumerate(data):
+                try:
+                    m = float(self.table.cellWidget(i, 2).text())
+                    b = float(self.table.cellWidget(i, 3).text())
+
+                    l.clear()
+                    v = h.getLast()
+                    x, y = h.getData()
+                    self.table.item(i, 1).setText("%.4f"%v)
+                    self.table.item(i, 0).setText("%.2f"%self.getTemperature(v, m, b))
+                    l.setData(x, self.getTemperature(y, m, b))
+
+                except Exception as e: pass #print(e)
+
+    def getTemperature(self, voltage, slope, intercept):
+        return (voltage - intercept) / slope
 
     def changeSampling(self, value):
         # self.sampling_timer.setInterval(value)

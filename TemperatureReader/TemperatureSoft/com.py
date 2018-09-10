@@ -10,7 +10,7 @@ SET_CHANNEL_3 = 0x06
 NAME = 0x0f
 
 BAUDRATE = 115200
-TIMEOUT = 0.2
+TIMEOUT = 0.1
 
 SERIAL = None
 
@@ -75,31 +75,34 @@ def initPort(port):
 
 def setChannel(channel):
     global SERIAL, LAST_CHANNEL
-    if LAST_CHANNEL != channel:
-        LAST_CHANNEL = channel
-        if (channel <= 3) and (channel >= 0):
-            try:
+    if (channel <= 3) and (channel >= 0):
+        try:
+            for i in range(10):
                 SERIAL.write([SET_CHANNEL_0 + channel])
-            except AttributeError:
-                raise(NoActiveSerialException())
-        else:
-            raise(Exception("%d is not a valid channel."%channel))
+                if "C" in SERIAL.readline().decode():
+                    break
+                sleep(0.01)
+        except AttributeError:
+            raise(NoActiveSerialException())
+    else:
+        raise(Exception("%d is not a valid channel."%channel))
 
 def getADC():
     for i in range(5):
         SERIAL.write([GET_ADC])
         try:
             high = SERIAL.read()[0]
-            if high <= 3:
-                low = SERIAL.read()[0]
-                return (high << 8) | low
+            # if high <= 3:
+            low = SERIAL.read()[0]
+            value = (high << 8) | low
+            return value
         except IndexError:
             pass
     raise(ADCException())
 
 def getVoltage():
     global V_REF
-    return V_REF * getADC() / 1023
+    return round(V_REF * getADC() / 0xFFFF, 4)
 
 def setGlobalSerial(serial):
     global SERIAL
