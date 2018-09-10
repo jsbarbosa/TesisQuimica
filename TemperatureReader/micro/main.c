@@ -22,7 +22,8 @@ int main(void)
 	setupADC();
 	setupUART();
 
-	uint8_t val, i;
+	uint8_t val;
+	uint16_t i;
 	uint32_t mean;
 
 	sei();
@@ -40,7 +41,7 @@ int main(void)
 				while(ADCSRA & (1 << ADSC));
 				mean += ADC;
 			}
-			sendADC(mean / 0xFFFF);
+			sendADC(mean / 64); // 2**10 * 4**6 / 2**16
 		}
 		else if(val == NAME)
 		{
@@ -49,6 +50,7 @@ int main(void)
 		else if((val >= SET_CHANNEL_0) && (val <= SET_CHANNEL_3))
 		{
 			setChannel(val - SET_CHANNEL_0);
+			uart_puts("C\n");
 		}
 		else
 		{
@@ -61,7 +63,7 @@ int main(void)
 void sendADC(uint16_t value)
 {
 	uint8_t high, low;
-	high = (value >> 8) & (0x03);
+	high = value >> 8;
 	low = value;
 
 	uart_putc(high);
@@ -78,9 +80,9 @@ void setupADC(void)
 {
 	/*setup ADC*/
 	ADMUX |= (1 << REFS0); // internal reference
-	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // set division factor to 128
+	//~ ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // set division factor to 128
 	//~ ADCSRA |= (1 << ADPS2) | (1 << ADPS1); // set division factor to 64 // default
-	//~ ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // set division factor to 8
+	ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // set division factor to 8
 	ADCSRA |= (1 << ADEN);
 }
 
