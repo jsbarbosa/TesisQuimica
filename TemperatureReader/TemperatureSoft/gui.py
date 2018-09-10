@@ -140,7 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(QtWidgets.QMainWindow, self).__init__()
-        self.setWindowTitle("Calibration Software")
+        self.setWindowTitle("Temperature Reader")
         widget = QtWidgets.QWidget()
         self.setCentralWidget(widget)
 
