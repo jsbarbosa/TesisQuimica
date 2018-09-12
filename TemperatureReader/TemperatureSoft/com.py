@@ -79,8 +79,12 @@ def setChannel(channel):
         try:
             for i in range(10):
                 SERIAL.write([SET_CHANNEL_0 + channel])
-                if "C" in SERIAL.readline().decode():
-                    break
+                ans = SERIAL.readline()
+                try:
+                    ans = ans.decode()
+                    if "C" in ans:
+                        break
+                except: pass
                 sleep(0.01)
         except AttributeError:
             raise(NoActiveSerialException())
