@@ -10,7 +10,7 @@ SET_CHANNEL_3 = 0x06
 NAME = 0x0f
 
 BAUDRATE = 115200
-TIMEOUT = 0.1
+TIMEOUT = 0.5
 
 SERIAL = None
 
@@ -106,7 +106,10 @@ def getADC():
 
 def getVoltage():
     global V_REF
-    return round(V_REF * getADC() / 0xFFFF, 4)
+    v = (V_REF * getADC()) / 0xFFFF
+    # v = V_REF * (getADC() >> 3) / 8192
+    v = round(v, 4)
+    return v
 
 def setGlobalSerial(serial):
     global SERIAL

@@ -93,11 +93,11 @@ class FindDevicesThread(QtCore.QThread):
         QtWidgets.QApplication.restoreOverrideCursor()
 
 class RequestDataThread(QtCore.QThread):
-    ADJUST_TIME = 53
+    ADJUST_TIME = 0.4
     def __init__(self, parent, sleep_time):
         super(QtCore.QThread, self).__init__()
         self.parent = parent
-        self.time = (sleep_time - self.ADJUST_TIME)/ 1e3
+        self.time = sleep_time
         self.RUN = True
         self.exception = None
 
@@ -105,13 +105,15 @@ class RequestDataThread(QtCore.QThread):
         global START_TIME
         while self.RUN:
             channels = self.parent.getChannels()
+            adjust = self.time / len(channels) - self.ADJUST_TIME
+            if adjust < 0: adjust = 0
             try:
                 for channel in channels:
                     now = time.time() - START_TIME
                     setChannel(channel)
                     holder = getattr(self.parent, "data%d" % channel)
                     holder.addValue(now, getVoltage())
-                    time.sleep(self.time)
+                    time.sleep(adjust)
 
             except Exception as e:
                 self.stop()
@@ -121,7 +123,8 @@ class RequestDataThread(QtCore.QThread):
         self.RUN = False
 
     def setTime(self, time):
-        self.time = (time - self.ADJUST_TIME) / 1e3
+        # self.time = (time - self.ADJUST_TIME) / 1e3
+        self.time = time
 
 class MainWindow(QtWidgets.QMainWindow):
     FIND_LABEL = "Find device"
@@ -130,11 +133,11 @@ class MainWindow(QtWidgets.QMainWindow):
     START_LABEL = "Start"
     STOP_LABEL = "Stop"
 
-    SAMPLING_LABEL = "Sampling time (ms)"
-    SAMPLING_MIN = 100
-    SAMPLING_MAX = 10000
-    SAMPLING_STEP = 100
-    SAMPLING_DEFAULT = 500
+    SAMPLING_LABEL = "Sampling time (s)"
+    SAMPLING_MIN = 1 # seconds
+    SAMPLING_MAX = 600 # seconds
+    SAMPLING_STEP = 1 # seconds
+    SAMPLING_DEFAULT = 1 # seconds
 
     MINIMUM_PLOT_UPDATE = 500
 
@@ -269,10 +272,9 @@ class MainWindow(QtWidgets.QMainWindow):
         return (voltage - intercept) / slope
 
     def changeSampling(self, value):
-        # self.sampling_timer.setInterval(value)
         self.data_thread.setTime(value)
-        if value > self.MINIMUM_PLOT_UPDATE:
-            self.update_plots_timer.setInterval(value)
+        if value*1e3 > self.MINIMUM_PLOT_UPDATE:
+            self.update_plots_timer.setInterval(value*1e3)
         else:
             self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
 
@@ -373,11 +375,6 @@ if __name__ == '__main__':
     icon = QtGui.QIcon(':/icon.ico')
     app.setWindowIcon(icon)
     app.processEvents()
-
-    # if abacus.CURRENT_OS == 'win32':
-    #     import ctypes
-    #     myappid = 'abacus.abacus.01' # arbitrary string
-    #     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     main = MainWindow()
     main.setWindowIcon(icon)
