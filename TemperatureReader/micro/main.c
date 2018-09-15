@@ -81,8 +81,8 @@ void setupADC(void)
 	/*setup ADC*/
 	ADMUX |= (1 << REFS0); // internal reference
 	//~ ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // set division factor to 128
-	//~ ADCSRA |= (1 << ADPS2) | (1 << ADPS1); // set division factor to 64 // default
-	ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // set division factor to 8
+	ADCSRA |= (1 << ADPS2) | (1 << ADPS1); // set division factor to 64 // default
+	//~ ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // set division factor to 8
 	ADCSRA |= (1 << ADEN);
 }
 
