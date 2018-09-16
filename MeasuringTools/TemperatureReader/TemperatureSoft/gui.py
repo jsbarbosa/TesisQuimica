@@ -10,6 +10,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
 
 START_TIME = 0
+KERNEL_FILTER = 3
 
 class DataHolder(object):
     def __init__(self):
@@ -21,6 +22,9 @@ class DataHolder(object):
     def addValue(self, x_value, y_value):
         self.x.append(x_value)
         self.y.append(y_value)
+        if (len(self.y) > KERNEL_FILTER) and (KERNEL_FILTER > 0):
+            temp = sorted(self.y[-KERNEL_FILTER:])[(KERNEL_FILTER - 1) // 2]
+            self.y[-(KERNEL_FILTER - 1)] = temp
 
     def getX(self):
         return self.x
@@ -34,11 +38,11 @@ class DataHolder(object):
         n_x = len(x)
         n_y = len(y)
         if n_x == n_y:
-            return x, y
+            return x[:-1], y[:-1]
         elif n_x > n_y:
-            return x[:-1], y
+            return x[:-2], y[:-1]
         else:
-            return x, y[:-1]
+            return x[:-1], y[:-2]
 
     def clear(self):
         self.x = []
@@ -223,7 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.adc_plot.setLabel('bottom', "Time", units = 's')
 
         symbol = "o" #
-        symbolSize = 5
+        symbolSize = 3
         self.data0_line = self.adc_plot.plot(pen = "b", symbol = symbol, symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Channel 0")
         self.data1_line = self.adc_plot.plot(pen = "m", symbol = symbol, symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Channel 1")
         self.data2_line = self.adc_plot.plot(pen = "g", symbol = symbol, symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Channel 2")
