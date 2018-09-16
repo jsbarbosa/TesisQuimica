@@ -108,7 +108,8 @@ def getVoltage():
     global V_REF
     v = (V_REF * getADC()) / 0xFFFF
     # v = V_REF * (getADC() >> 3) / 8192
-    v = round(v, 4)
+    # v = round(v, 4) # 0.01 precision
+    v = round(v * 5 * 1e4) / (5 * 1e4)
     return v
 
 def setGlobalSerial(serial):
