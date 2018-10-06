@@ -168,8 +168,8 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(self.settings_frame)
         ### pyqtgraph
-        pg.setConfigOptions(leftButtonPan = False)
-        # pg.setConfigOptions(foreground = 'k', background = None, antialias = True)
+        pg.setConfigOptions(leftButtonPan = False, foreground = 'k', background = None)
+        # pg.setConfigOptions(, antialias = True)
         self.temperature_plot = pg.PlotWidget(
             labels={'left': 'Temperatura (°C)', 'bottom': 'Hora'},
             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
