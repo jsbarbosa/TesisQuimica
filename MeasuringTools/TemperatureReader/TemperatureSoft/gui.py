@@ -8,24 +8,37 @@ import pyqtgraph as pg
 try:
     from PyQt5 import QtCore, QtGui
     from PyQt5.QtWidgets import QLabel, QWidget, QMainWindow, QHBoxLayout,\
-            QGroupBox, QFormLayout, QSystemTrayIcon, QApplication, QMenu, QStyleFactory
+            QGroupBox, QFormLayout, QSystemTrayIcon, QApplication, QMenu, \
+            QStyleFactory, QMessageBox
 except ImportError:
     from PyQt4 import QtCore, QtGui
     from PyQt4.QtGui import QLabel, QWidget, QMainWindow, QHBoxLayout, \
-            QGroupBox, QFormLayout, QSystemTrayIcon, QApplication, QMenu, QStyleFactory
+            QGroupBox, QFormLayout, QSystemTrayIcon, QApplication, QMenu,\
+            QStyleFactory, QMessageBox
 
+import datetime
 import numpy as np
 
 START_TIME = 0
 KERNEL_FILTER = 3
 
-MAX_HOLDER = 1e8
+MAX_HOLDER = 45e3
 
 # https://gist.github.com/iverasp/9349dffa42aeffb32e48a0868edfa32d
 
+
+class TimeAxisItem(pg.AxisItem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setLabel(text='Time', units=None)
+        self.enableAutoSIPrefix(False)
+
+    def tickStrings(self, values, scale, spacing):
+        return [datetime.datetime.fromtimestamp(value).strftime("%d/%H:%M") for value in values]
+
 class RingBuffer(object):
     def __init__(self, size_max):
-        self.max = size_max
+        self.max = int(size_max)
         self.data = []
 
     class __Full:
@@ -55,19 +68,24 @@ class DataHolder(object):
         self.x = RingBuffer(MAX_HOLDER)
         self.y = [RingBuffer(MAX_HOLDER), RingBuffer(MAX_HOLDER), RingBuffer(MAX_HOLDER)]
 
+    def timestamp(self):
+        return time.mktime(datetime.datetime.now().timetuple())
+
     def addValues(self, temperatures):
         now = time.localtime()
-        self.x.append(now)
+        self.x.append(self.timestamp())
         for i in range(3):
-            self.y[i].append(temperatures[i])
-        self.save()
-        # if (len(self.y) > KERNEL_FILTER) and (KERNEL_FILTER > 0):
-        #     temp = sorted(self.y[-KERNEL_FILTER:])[(KERNEL_FILTER - 1) // 2]
-        #     self.y[-(KERNEL_FILTER - 1)] = temp
+            y = self.y[i]
+            y.append(temperatures[i])
+            if (len(y.get()) > KERNEL_FILTER) and (KERNEL_FILTER > 0):
+                temp = sorted(y.get()[-KERNEL_FILTER:])[(KERNEL_FILTER - 1) // 2]
+                y.get()[-(KERNEL_FILTER - 1)] = temp
 
-    def save(self):
+        self.save(now)
+
+    def save(self, now):
         with open("TemperatureData.txt", "a") as file:
-            now = time.strftime(strftime("%Y-%m-%d %H:%M:%S", self.getX()[-1]))
+            now = time.strftime("%Y-%m-%d %H:%M:%S", now)
             data = ["%.2f"%self.getY(i)[-1] for i in range(3)]
             line = [now] + data
             file.write("\t".join(line) + "\r\n")
@@ -79,8 +97,8 @@ class DataHolder(object):
         return self.y[i].get()
 
     def clear(self):
-        self.x = []
-        self.y = []
+        self.x = RingBuffer(MAX_HOLDER)
+        self.y = [RingBuffer(MAX_HOLDER), RingBuffer(MAX_HOLDER), RingBuffer(MAX_HOLDER)]
 
     def __len__(self):
         return len(self.x.get())
@@ -112,14 +130,14 @@ class RequestDataThread(QtCore.QThread):
     def run(self):
         global START_TIME
         while True:
-            if not isSerialNone:
+            if not isSerialNone():
                 try:
-                    holder.addValues(getTemperatures())
+                    self.holder.addValues(getTemperatures())
                 except Exception as e:
                     self.stop()
                     self.exception = e
             else:
-                time.sleep(10)
+                time.sleep(5)
 
     def stop(self):
         close()
@@ -150,15 +168,14 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(self.settings_frame)
         ### pyqtgraph
-        pg.setConfigOptions(foreground = 'k', background = None, antialias = True)
-        self.temperature_plot_widget = pg.GraphicsWindow()
-        self.main_layout.addWidget(self.temperature_plot_widget)
-
-        self.temperature_plot = self.temperature_plot_widget.addPlot()
+        pg.setConfigOptions(leftButtonPan = False)
+        # pg.setConfigOptions(foreground = 'k', background = None, antialias = True)
+        self.temperature_plot = pg.PlotWidget(
+            labels={'left': 'Temperatura (°C)', 'bottom': 'Hora'},
+            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
+            )
         self.temperature_plot.addLegend()
-
-        self.temperature_plot.setLabel('left', "Temperature", units = '°C')
-        self.temperature_plot.setLabel('bottom', "Time", units = 's')
+        self.main_layout.addWidget(self.temperature_plot)
 
         symbol = None #
         symbolSize = 3
@@ -184,11 +201,11 @@ class MainWindow(QMainWindow):
             self.errorWindow(self.data_thread.exception)
         else:
             try:
-                x = self.data.getX()
+                x = np.array(self.data.getX())
                 for i in range(3):
                     label = getattr(self, "label_%d" % i)
                     plot = getattr(self, "data%d_line" % i)
-                    data = self.data.getY(i)
+                    data = np.array(self.data.getY(i))
                     plot.setData(x, data)
                     label.setText("%.2f"%data[-1])
             except Exception as e:
@@ -205,21 +222,21 @@ class MainWindow(QMainWindow):
         self.update_plots_timer.stop()
 
     def warning(self, text):
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Warning)
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
         msg.setText('Warning.\n%s' % text)
         msg.setWindowTitle("Warning")
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
 
     def errorWindow(self, exception):
         self.noDevice()
         text = str(exception)
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Warning)
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
         msg.setText('An error ocurred.\n%s' % text)
         msg.setWindowTitle("Error")
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
 
     def closeEvent(self, event):
@@ -252,9 +269,10 @@ class SystemTrayIcon(QSystemTrayIcon):
         self.main_window.show()
 
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     QApplication.setStyle(QStyleFactory.create('Fusion')) # <- Choose the style
-
+    #
     icon = QtGui.QIcon(':/icon.ico')
     app.setWindowIcon(icon)
     app.processEvents()
@@ -263,6 +281,11 @@ if __name__ == '__main__':
     trayIcon = SystemTrayIcon(icon, w)
 
     trayIcon.show()
+
+
+    # w = ExampleWidget()
+    # w.show()
+
     app.exec_()
 
     close()

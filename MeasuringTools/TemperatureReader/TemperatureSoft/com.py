@@ -116,13 +116,13 @@ def getVoltage():
     return v
 
 def getTemperatures():
-    global TIME, ADJUST_TIME
+    global SAMPLING_TIME, ADJUST_TIME
     t = [0]*3
-    adjust = TIME / 3 - ADJUST_TIME
+    adjust = SAMPLING_TIME / 3 - ADJUST_TIME
     if adjust < 0: adjust = 0
     for i in range(3):
         setChannel(i + 1)
-        val = (getVoltage() - INTERCEPTS[i]) / SLOPES[i]
+        val = (1000*getVoltage() - INTERCEPTS[i]) / SLOPES[i]
         t[i] = round(val, 2)
         sleep(adjust)
     return t
