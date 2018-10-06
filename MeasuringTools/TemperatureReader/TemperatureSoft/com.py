@@ -9,8 +9,14 @@ SET_CHANNEL_2 = 0x05
 SET_CHANNEL_3 = 0x06
 NAME = 0x0f
 
+SLOPES = [10.257, 10.3, 10.29]
+INTERCEPTS = [-12.2, -10.2, -8.4]
+
 BAUDRATE = 115200
 TIMEOUT = 0.5
+
+SAMPLING_TIME = 2
+ADJUST_TIME = 0.4
 
 SERIAL = None
 
@@ -107,18 +113,35 @@ def getADC():
 def getVoltage():
     global V_REF
     v = (V_REF * getADC()) / 0xFFFF
-    # v = V_REF * (getADC() >> 3) / 8192
-    # v = round(v, 4) # 0.01 precision
-    v = round(v * 1 * 1e4) / (1 * 1e4)
     return v
+
+def getTemperatures():
+    global TIME, ADJUST_TIME
+    t = [0]*3
+    adjust = TIME / 3 - ADJUST_TIME
+    if adjust < 0: adjust = 0
+    for i in range(3):
+        setChannel(i + 1)
+        val = (getVoltage() - INTERCEPTS[i]) / SLOPES[i]
+        t[i] = round(val, 2)
+        sleep(adjust)
+    return t
 
 def setGlobalSerial(serial):
     global SERIAL
     SERIAL = serial
 
+def isSerialNone():
+    global SERIAL
+    if SERIAL == None:
+        return True
+    return False
+
 def close():
     global SERIAL
-    try: SERIAL.close()
+    try:
+        SERIAL.close()
+        SERIAL = None
     except: pass
 
 if __name__ == '__main__':

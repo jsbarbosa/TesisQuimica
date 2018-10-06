@@ -2,322 +2,197 @@ import sys
 import time
 
 import __images__
-from com import initPort, findDevices, setChannel, getVoltage, setGlobalSerial, close
+from com import initPort, findDevices, setChannel, getTemperatures, setGlobalSerial, close, isSerialNone
 
 import pyqtgraph as pg
-from PyQt5 import QtCore, QtGui, QtWidgets
+try:
+    from PyQt5 import QtCore, QtGui
+    from PyQt5.QtWidgets import QLabel, QWidget, QMainWindow, QHBoxLayout,\
+            QGroupBox, QFormLayout, QSystemTrayIcon, QApplication, QMenu, QStyleFactory
+except ImportError:
+    from PyQt4 import QtCore, QtGui
+    from PyQt4.QtGui import QLabel, QWidget, QMainWindow, QHBoxLayout, \
+            QGroupBox, QFormLayout, QSystemTrayIcon, QApplication, QMenu, QStyleFactory
 
 import numpy as np
 
 START_TIME = 0
 KERNEL_FILTER = 3
 
+MAX_HOLDER = 1e8
+
+# https://gist.github.com/iverasp/9349dffa42aeffb32e48a0868edfa32d
+
+class RingBuffer(object):
+    def __init__(self, size_max):
+        self.max = size_max
+        self.data = []
+
+    class __Full:
+        """ class that implements a full buffer """
+        def append(self, x):
+            """ Append an element overwriting the oldest one. """
+            self.data[self.cur] = x
+            self.cur = (self.cur+1) % self.max
+
+        def get(self):
+            """ return list of elements in correct order """
+            return self.data[self.cur:]+self.data[:self.cur]
+
+    def append(self, x):
+        """append an element at the end of the buffer"""
+        self.data.append(x)
+        if len(self.data) == self.max:
+            self.cur = 0
+            self.__class__ = self.__Full # Permanently change self's class from non-full to full
+
+    def get(self):
+        """ Return a list of elements from the oldest to the newest. """
+        return self.data
+
 class DataHolder(object):
     def __init__(self):
-        self.x = []
-        self.y = []
-        self.freqs = [0] * 3
-        # self.filtered = []
+        self.x = RingBuffer(MAX_HOLDER)
+        self.y = [RingBuffer(MAX_HOLDER), RingBuffer(MAX_HOLDER), RingBuffer(MAX_HOLDER)]
 
-    def addValue(self, x_value, y_value):
-        self.x.append(x_value)
-        self.y.append(y_value)
-        if (len(self.y) > KERNEL_FILTER) and (KERNEL_FILTER > 0):
-            temp = sorted(self.y[-KERNEL_FILTER:])[(KERNEL_FILTER - 1) // 2]
-            self.y[-(KERNEL_FILTER - 1)] = temp
+    def addValues(self, temperatures):
+        now = time.localtime()
+        self.x.append(now)
+        for i in range(3):
+            self.y[i].append(temperatures[i])
+        self.save()
+        # if (len(self.y) > KERNEL_FILTER) and (KERNEL_FILTER > 0):
+        #     temp = sorted(self.y[-KERNEL_FILTER:])[(KERNEL_FILTER - 1) // 2]
+        #     self.y[-(KERNEL_FILTER - 1)] = temp
+
+    def save(self):
+        with open("TemperatureData.txt", "a") as file:
+            now = time.strftime(strftime("%Y-%m-%d %H:%M:%S", self.getX()[-1]))
+            data = ["%.2f"%self.getY(i)[-1] for i in range(3)]
+            line = [now] + data
+            file.write("\t".join(line) + "\r\n")
 
     def getX(self):
-        return self.x
+        return self.x.get()
 
-    def getY(self):
-        return self.y
-
-    def getData(self):
-        x = np.array(self.x).copy()
-        y = np.array(self.y).copy()#self.filtered
-        n_x = len(x)
-        n_y = len(y)
-        if n_x == n_y:
-            return x[:-1], y[:-1]
-        elif n_x > n_y:
-            return x[:-2], y[:-1]
-        else:
-            return x[:-1], y[:-2]
+    def getY(self, i):
+        return self.y[i].get()
 
     def clear(self):
         self.x = []
         self.y = []
-        # self.filtered = []
-
-    def filterData(self):
-        """Apply a length-k median filter to a 1D array x.
-        Boundaries are extended by repeating endpoints.
-        """
-        if len(self.y):
-            k = 3
-            temp = self.y.copy()
-            k2 = (k - 1) // 2
-            y = np.zeros ((len (temp), k))
-
-            y[:,k2] = temp
-            for i in range (k2):
-                j = k2 - i
-                y[j:,i] = temp[:-j]
-                y[:j,i] = temp[0]
-                y[:-j,-(i+1)] = temp[j:]
-                y[-j:,-(i+1)] = temp[-1]
-            self.filtered = np.median (y, axis=1)
-            return self.filtered
-        else:
-            return []
-
-    def getLast(self):
-        return self.y[-1]
 
     def __len__(self):
-        return len(self.x)
+        return len(self.x.get())
 
 class FindDevicesThread(QtCore.QThread):
-    def __init__(self, parent):
+    def __init__(self):
         super(QtCore.QThread, self).__init__()
-        self.parent = parent
-        self.success = False
 
     def run(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        devs = findDevices()
-        if len(devs) == 1:
-            try:
-                setGlobalSerial(initPort(devs[0]))
-                self.success = True
-            except:
-                setGlobalSerial(None)
-        else:
-            setGlobalSerial(None)
-        QtWidgets.QApplication.restoreOverrideCursor()
+        while True:
+            if isSerialNone():
+                devs = findDevices()
+                if len(devs) == 1:
+                    try:
+                        setGlobalSerial(initPort(devs[0]))
+                    except:
+                        setGlobalSerial(None)
+                else:
+                    setGlobalSerial(None)
+            else:
+                time.sleep(10)
 
 class RequestDataThread(QtCore.QThread):
-    ADJUST_TIME = 0.4
-    def __init__(self, parent, sleep_time):
+    def __init__(self, holder):
         super(QtCore.QThread, self).__init__()
-        self.parent = parent
-        self.time = sleep_time
-        self.RUN = True
+        self.holder = holder
         self.exception = None
 
     def run(self):
         global START_TIME
-        while self.RUN:
-            channels = self.parent.getChannels()
-            adjust = self.time / len(channels) - self.ADJUST_TIME
-            if adjust < 0: adjust = 0
-            try:
-                for channel in channels:
-                    now = time.time() - START_TIME
-                    setChannel(channel)
-                    holder = getattr(self.parent, "data%d" % channel)
-                    holder.addValue(now, getVoltage())
-                    time.sleep(adjust)
-
-            except Exception as e:
-                self.stop()
-                self.exception = e
+        while True:
+            if not isSerialNone:
+                try:
+                    holder.addValues(getTemperatures())
+                except Exception as e:
+                    self.stop()
+                    self.exception = e
+            else:
+                time.sleep(10)
 
     def stop(self):
-        self.RUN = False
+        close()
 
-    def setTime(self, time):
-        # self.time = (time - self.ADJUST_TIME) / 1e3
-        self.time = time
-
-class MainWindow(QtWidgets.QMainWindow):
-    FIND_LABEL = "Find device"
-    FOUND_LABEL = "Device found"
-
-    START_LABEL = "Start"
-    STOP_LABEL = "Stop"
-
-    SAMPLING_LABEL = "Sampling time (s)"
-    SAMPLING_MIN = 1 # seconds
-    SAMPLING_MAX = 600 # seconds
-    SAMPLING_STEP = 1 # seconds
+class MainWindow(QMainWindow):
     SAMPLING_DEFAULT = 1 # seconds
-
-    MINIMUM_PLOT_UPDATE = 500
+    MINIMUM_PLOT_UPDATE = 2000
 
     def __init__(self):
-        super(QtWidgets.QMainWindow, self).__init__()
-        self.setWindowTitle("Temperature Reader")
-        widget = QtWidgets.QWidget()
+        super(QMainWindow, self).__init__()
+        self.setWindowTitle("Lector de temperatura")
+        widget = QWidget()
         self.setCentralWidget(widget)
 
-        self.main_layout = QtWidgets.QHBoxLayout(widget)
+        self.main_layout = QHBoxLayout(widget)
         self.main_layout.setContentsMargins(11, 11, 11, 11)
         self.main_layout.setSpacing(6)
 
-        self.settings_frame = QtWidgets.QGroupBox()
-        self.settings_layout = QtWidgets.QFormLayout(self.settings_frame)
+        self.settings_frame = QGroupBox()
+        self.settings_layout = QFormLayout(self.settings_frame)
 
-        self.sampling_widget = QtWidgets.QSpinBox()
-        self.sampling_widget.setMaximum(self.SAMPLING_MAX)
-        self.sampling_widget.setMinimum(self.SAMPLING_MIN)
-        self.sampling_widget.setSingleStep(self.SAMPLING_STEP)
-        self.sampling_widget.setValue(self.SAMPLING_DEFAULT)
+        self.label_0 = QLabel("00.00")
+        self.label_1 = QLabel("00.00")
+        self.label_2 = QLabel("00.00")
+        self.settings_layout.addRow(self.label_0, QLabel("\tInterno (°C)"))
+        self.settings_layout.addRow(self.label_1, QLabel("\tExterno (°C)"))
+        self.settings_layout.addRow(self.label_2, QLabel("\tAmbiente (°C)"))
 
-        self.find_device_widget = QtWidgets.QPushButton(self.FIND_LABEL)
-        self.start_widget = QtWidgets.QPushButton(self.START_LABEL)
-
-        self.channel_0_widget = QtWidgets.QCheckBox("Ch 0")
-        self.channel_1_widget = QtWidgets.QCheckBox("Ch 1")
-        self.channel_2_widget = QtWidgets.QCheckBox("Ch 2")
-        self.channel_3_widget = QtWidgets.QCheckBox("Ch 3")
-        self.channel_0_widget.setCheckState(0)
-        self.channel_1_widget.setCheckState(2)
-        self.channel_2_widget.setCheckState(2)
-        self.channel_3_widget.setCheckState(2)
-
-        self.clear_widget = QtWidgets.QPushButton("Clear plot")
-
-        self.table = QtWidgets.QTableWidget()
-        self.table.setRowCount(4)
-        self.table.setColumnCount(4)
-
-        self.table.setVerticalHeaderLabels(["C0", "C1", "C2", "C3"])
-        self.table.setHorizontalHeaderLabels(["T (°C)", "Measure (V)", "m (V/°C)", "b (V)"])
-
-        for j in range(4):
-            i0 = QtWidgets.QTableWidgetItem("0.0000")
-            i3 = QtWidgets.QTableWidgetItem("0.00")
-            i1 = QtWidgets.QLineEdit("0.0100")
-            i2 = QtWidgets.QLineEdit("0.0000")
-
-            i0.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-            i1.setValidator(QtGui.QDoubleValidator(-1, 1, 4))
-            i2.setValidator(QtGui.QDoubleValidator(-1, 1, 4))
-            i3.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-
-            self.table.setItem(j, 0, i3)
-            self.table.setCellWidget(j, 2, i1)
-            self.table.setCellWidget(j, 3, i2)
-            self.table.setItem(j, 1, i0)
-
-        self.table.resizeColumnsToContents()
-        self.table.resizeRowsToContents()
-
-        self.settings_layout.addRow(QtWidgets.QLabel(self.SAMPLING_LABEL), self.sampling_widget)
-        self.settings_layout.addWidget(self.channel_0_widget)
-        self.settings_layout.addWidget(self.channel_1_widget)
-        self.settings_layout.addWidget(self.channel_2_widget)
-        self.settings_layout.addWidget(self.channel_3_widget)
-        self.settings_layout.addRow(self.find_device_widget, self.start_widget)
-        self.settings_layout.addRow(self.clear_widget)
-
-        self.settings_layout.addRow(self.table)
         self.main_layout.addWidget(self.settings_frame)
-
         ### pyqtgraph
         pg.setConfigOptions(foreground = 'k', background = None, antialias = True)
-        self.adc_plot_widget = pg.GraphicsWindow()
-        self.main_layout.addWidget(self.adc_plot_widget)
+        self.temperature_plot_widget = pg.GraphicsWindow()
+        self.main_layout.addWidget(self.temperature_plot_widget)
 
-        self.adc_plot = self.adc_plot_widget.addPlot()
-        self.adc_plot.addLegend()
+        self.temperature_plot = self.temperature_plot_widget.addPlot()
+        self.temperature_plot.addLegend()
 
-        self.adc_plot.setLabel('left', "Temperature", units = '°C')
-        self.adc_plot.setLabel('bottom', "Time", units = 's')
+        self.temperature_plot.setLabel('left', "Temperature", units = '°C')
+        self.temperature_plot.setLabel('bottom', "Time", units = 's')
 
-        symbol = "o" #
+        symbol = None #
         symbolSize = 3
-        self.data0_line = self.adc_plot.plot(pen = "b", symbol = symbol, symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Channel 0")
-        self.data1_line = self.adc_plot.plot(pen = "m", symbol = symbol, symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Channel 1")
-        self.data2_line = self.adc_plot.plot(pen = "g", symbol = symbol, symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Channel 2")
-        self.data3_line = self.adc_plot.plot(pen = "r", symbol = symbol, symbolPen = "r", symbolBrush="r", symbolSize=symbolSize, name="Channel 3")
+        self.data0_line = self.temperature_plot.plot(pen = "b", symbol = symbol, symbolPen = "b", symbolBrush="b", symbolSize=symbolSize, name="Interno")
+        self.data1_line = self.temperature_plot.plot(pen = "m", symbol = symbol, symbolPen = "m", symbolBrush="m", symbolSize=symbolSize, name="Externo")
+        self.data2_line = self.temperature_plot.plot(pen = "g", symbol = symbol, symbolPen = "g", symbolBrush="g", symbolSize=symbolSize, name="Ambiente")
 
         #### signals
-        self.sampling_widget.valueChanged.connect(self.changeSampling)
-        self.find_device_widget.clicked.connect(self.findDevicesPush)
-        self.start_widget.clicked.connect(self.startPush)
-        self.clear_widget.clicked.connect(self.clearPlot)
-
         self.update_plots_timer = QtCore.QTimer()
         self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
         self.update_plots_timer.timeout.connect(self.updatePlots)
 
-        self.data_thread = RequestDataThread(self, self.SAMPLING_DEFAULT)
+        self.find_thread = FindDevicesThread()
+        self.find_thread.start()
 
-        self.enableOnDevice(False)
-
-        self.data0 = DataHolder()
-        self.data1 = DataHolder()
-        self.data2 = DataHolder()
-        self.data3 = DataHolder()
+        self.data = DataHolder()
+        self.data_thread = RequestDataThread(self.data)
+        self.data_thread.start()
+        self.update_plots_timer.start()
 
     def updatePlots(self):
         if self.data_thread.exception != None:
             self.errorWindow(self.data_thread.exception)
         else:
-            channels = [0, 1, 2, 3]
-            data = [(getattr(self, "data%d" % c), getattr(self, "data%d_line" % c)) for c in channels]
-            for (i, (h, l)) in enumerate(data):
-                try:
-                    m = float(self.table.cellWidget(i, 2).text())
-                    b = float(self.table.cellWidget(i, 3).text())
-
-                    l.clear()
-                    v = h.getLast()
-                    x, y = h.getData()
-                    self.table.item(i, 1).setText("%.4f"%v)
-                    self.table.item(i, 0).setText("%.2f"%self.getTemperature(v, m, b))
-                    l.setData(x, self.getTemperature(y, m, b))
-
-                except Exception as e: pass #print(e)
-
-    def getTemperature(self, voltage, slope, intercept):
-        return (voltage - intercept) / slope
-
-    def changeSampling(self, value):
-        self.data_thread.setTime(value)
-        if value*1e3 > self.MINIMUM_PLOT_UPDATE:
-            self.update_plots_timer.setInterval(value*1e3)
-        else:
-            self.update_plots_timer.setInterval(self.MINIMUM_PLOT_UPDATE)
-
-    def findDevicesPush(self):
-        self.find_thread = FindDevicesThread(self)
-        self.find_thread.finished.connect(self.deviceConnection)
-        self.find_thread.start()
-
-    def startPush(self):
-        global START_TIME
-        if self.start_widget.text() == self.START_LABEL:
-            self.enableOnStart(False)
-            self.data_thread = RequestDataThread(self, self.sampling_widget.value())
-            self.data_thread.start()
-            # self.sampling_timer.start()
-            self.update_plots_timer.start()
-            self.start_widget.setText(self.STOP_LABEL)
-
-            if START_TIME == 0:
-                START_TIME = time.time()
-        else:
-            self.enableOnStart(True)
-            self.data_thread.stop()
-            # self.sampling_timer.stop()
-            self.update_plots_timer.stop()
-            self.start_widget.setText(self.START_LABEL)
-
-    def enableOnDevice(self, enable):
-        self.start_widget.setEnabled(enable)
-        self.enableOnStart(enable)
-        self.find_device_widget.setEnabled(not enable)
-
-    def enableOnStart(self, enable):
-        pass
-        # self.sampling_widget.setEnabled(enable)
-        # self.channel_0_widget.setEnabled(enable)
-        # self.channel_1_widget.setEnabled(enable)
-        # self.channel_2_widget.setEnabled(enable)
-        # self.channel_3_widget.setEnabled(enable)
+            try:
+                x = self.data.getX()
+                for i in range(3):
+                    label = getattr(self, "label_%d" % i)
+                    plot = getattr(self, "data%d_line" % i)
+                    data = self.data.getY(i)
+                    plot.setData(x, data)
+                    label.setText("%.2f"%data[-1])
+            except Exception as e:
+                print(e)
 
     def deviceConnection(self):
         if self.find_thread.success:
@@ -325,34 +200,9 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.noDevice()
 
-    def deviceExists(self):
-        self.find_device_widget.setText(self.FOUND_LABEL)
-        self.enableOnDevice(True)
-
     def noDevice(self):
         self.data_thread.stop()
-        # self.sampling_timer.stop()
         self.update_plots_timer.stop()
-        self.find_device_widget.setText(self.FIND_LABEL)
-        self.start_widget.setText(self.START_LABEL)
-        self.enableOnDevice(False)
-
-    def clearPlot(self):
-        global START_TIME
-        START_TIME = time.time()
-        for channel in range(4):
-            holder = getattr(self, "data%d" % channel)
-            line = getattr(self, "data%d_line" % channel)
-            holder.clear()
-            line.setData(holder.getX(), holder.getY())
-
-    def getChannels(self):
-        channels = []
-        for i in range(4):
-            attr = getattr(self, "channel_%d_widget"%i)
-            if attr.checkState():
-                channels.append(i)
-        return channels
 
     def warning(self, text):
         msg = QtWidgets.QMessageBox()
@@ -372,17 +222,47 @@ class MainWindow(QtWidgets.QMainWindow):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+
+class SystemTrayIcon(QSystemTrayIcon):
+    def __init__(self, icon, parent = None):
+        QSystemTrayIcon.__init__(self, icon, parent)
+        menu = QMenu(parent)
+        openAction = menu.addAction("Open")
+        exitAction = menu.addAction("Exit")
+        self.setContextMenu(menu)
+
+        openAction.triggered.connect(self.openMain)
+        exitAction.triggered.connect(self.exit)
+        self.activated.connect(self.systemIcon)
+
+        self.main_window = MainWindow()
+        self.openMain()
+
+    def exit(self):
+        QtCore.QCoreApplication.exit()
+
+    def systemIcon(self, reason):
+        if reason == QSystemTrayIcon.Trigger:
+            self.openMain()
+
+    def openMain(self):
+        self.main_window.show()
+
 if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Fusion')) # <- Choose the style
+    app = QApplication(sys.argv)
+    QApplication.setStyle(QStyleFactory.create('Fusion')) # <- Choose the style
 
     icon = QtGui.QIcon(':/icon.ico')
     app.setWindowIcon(icon)
     app.processEvents()
 
-    main = MainWindow()
-    main.setWindowIcon(icon)
-    main.show()
+    w = QWidget()
+    trayIcon = SystemTrayIcon(icon, w)
+
+    trayIcon.show()
     app.exec_()
 
     close()
