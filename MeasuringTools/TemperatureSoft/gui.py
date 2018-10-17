@@ -26,7 +26,6 @@ MAX_HOLDER = 45e3
 
 # https://gist.github.com/iverasp/9349dffa42aeffb32e48a0868edfa32d
 
-
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
