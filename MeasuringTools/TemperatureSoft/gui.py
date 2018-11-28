@@ -161,16 +161,16 @@ class MainWindow(QMainWindow):
         self.label_0 = QLabel("00.00")
         self.label_1 = QLabel("00.00")
         self.label_2 = QLabel("00.00")
-        self.settings_layout.addRow(self.label_0, QLabel("\tInterno (°C)"))
-        self.settings_layout.addRow(self.label_1, QLabel("\tExterno (°C)"))
-        self.settings_layout.addRow(self.label_2, QLabel("\tAmbiente (°C)"))
+        self.settings_layout.addRow(self.label_0, QLabel("\tInterno (C)"))
+        self.settings_layout.addRow(self.label_1, QLabel("\tExterno (C)"))
+        self.settings_layout.addRow(self.label_2, QLabel("\tAmbiente (C)"))
 
         self.main_layout.addWidget(self.settings_frame)
         ### pyqtgraph
         pg.setConfigOptions(leftButtonPan = False, foreground = 'k', background = None)
         # pg.setConfigOptions(, antialias = True)
         self.temperature_plot = pg.PlotWidget(
-            labels={'left': 'Temperatura (°C)', 'bottom': 'Hora'},
+            labels={'left': 'Temperatura (C)', 'bottom': 'Hora'},
             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
             )
         self.temperature_plot.addLegend()
@@ -268,11 +268,8 @@ class SystemTrayIcon(QSystemTrayIcon):
         self.main_window.show()
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
-    QApplication.setStyle(QStyleFactory.create('Fusion')) # <- Choose the style
-    #
-    icon = QtGui.QIcon(':/icon.ico')
+    QApplication.setStyle(QStyleFactory.create('Fusion'))
     app.setWindowIcon(icon)
     app.processEvents()
 
@@ -280,10 +277,6 @@ if __name__ == '__main__':
     trayIcon = SystemTrayIcon(icon, w)
 
     trayIcon.show()
-
-
-    # w = ExampleWidget()
-    # w.show()
 
     app.exec_()
 

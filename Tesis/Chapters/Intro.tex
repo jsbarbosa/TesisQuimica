@@ -1,0 +1,107 @@
+% !TeX spellcheck = es_ANY
+% Chapter 1
+
+%\chapter{Chapter Title Here} % Main chapter title
+%
+%\label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
+
+%----------------------------------------------------------------------------------------
+
+% Define some commands to keep the formatting separated from the content 
+\newcommand{\keyword}[1]{\textit{#1}}
+%\newcommand{\tabhead}[1]{\textbf{#1}}
+%\newcommand{\code}[1]{\texttt{#1}}
+%\newcommand{\file}[1]{\texttt{\bfseries#1}}
+%\newcommand{\option}[1]{\texttt{\itshape#1}}
+
+%----------------------------------------------------------------------------------------
+
+\chapter{Introducción}
+	La termodinámica es el estudio de las transformaciones de energía, en la etapa más temprana de esta rama de las ciencias, se pensaba que el calor era una clase de fluido cuya cantidad neta en el universo permanecía siempre constante. El aumento de temperatura de un objeto era explicado a partir de la migración de calor de un objeto a otro \cite{feynman2011feynman, fermi1986}. Usando esta teoría del calor como fluido, el ingeniero Sadi Carnot dio origen a la termodinámica con el análisis del problema, sobre cómo generar el mejor y más eficiente motor de vapor en 1824. Posteriormente, Julius von Mayer en 1842 descubrió una equivalencia entre el calor y el trabajo mecánico, trabajo también publicado por James Joule el siguiente año \cite{fermi1986}. A raíz de esto hoy se considera el calor como una forma de transferencia de energía \cite{fermi1986}.
+	
+	Los resultados de la termodinámica se encuentran implícitos en una serie de declaraciones que reciben el nombre de leyes de la termodinámica, las cuales en conjunto, nos permiten conocer la dirección natural en la que tienen lugar los cambios químicos y físicos en la materia \cite{atkins2011physical}. Históricamente la termodinámica fue desarrollada antes que se tuviera un entendimiento sobre la estructura interna de la materia, además, sus leyes tampoco siguen un orden cronológico \cite{feynman2011feynman}. La primera ley surge del trabajo realizado por Mayer en 1842, una de las leyes más importantes de la ciencia en general: la conservación de la energía \cite{feynman2011feynman, fermi1986}. La segunda se atribuye a Carnot y Clausius en 1824, y habla sobre la reversibilidad o direccionalidad de los procesos \cite{feynman2011feynman}.
+	
+	A pesar que el estudio de las transformaciones de energía parece un tema distante de la química, la termodinámica, estudiada a través de la fisicoquímica, ha demostrado ser de vital importancia tanto en la química como la biología \cite{atkins2011physical}. No sólo permite entender la producción o consumo de energía en las reacciones químicas, además constituye una herramienta fundamental para responder preguntas que se encuentran en el corazón de la bioquímica, por ejemplo sobre cómo fluye la energía en una célula, y qué tan grande puede ser la agrupación de moléculas que forman estructuras complejas como las células \cite{atkins2011physical}. En otros casos, por ejemplo, existen propiedades de fácil determinación para un analista, como el color, masa y densidad. Sin embargo, hay propiedades que dependen de los enlaces, estructura molecular y naturaleza del material, entre estas se encuentran propiedades termodinámicas de interés químico: capacidad calorífica, entalpía, entropía, etc \cite{gaisford2016principles}.
+	
+	Dentro de la fisicoquímica, el estudio y medición de la transferencia de energía en forma de calor se denomina calorimetría, y constituye una de las áreas más viejas de esta rama de la química \cite{zielenkiewicz2006theory}. Se podría considerar que la historia de esta comienza en junio de 1783, con la presentación de \textit{Memoria del calor} (Mémoire de la Chaleur) por Lavoisier y Laplace a la Academia Francesa \cite{zielenkiewicz2006theory}. La mayoría de los procesos físicos y químicos están acompañados de absorción o liberación de energía. Lo anterior hace de la calorimetría una técnica con un amplio rango de aplicaciones \cite{wadso2001standards}. Entre estas aplicaciones se tienen titulaciones, flujos, reacciones y estudio de procesos de sorción \cite{gaisford2016principles}.
+		
+	El instrumento para realizar este tipo de mediciones se denomina calorímetro, y existen de diversos tipos. Pueden ser clasificados por el tipo de condiciones que imponen al sistema, por ejemplo, volumen constante, temperatura constante, calor constante, etc. Estos calorímetros reciben el nombre de: bombas calorimétricas, isotérmicos, y adiabáticos, correspondientemente \cite{gaisford2016principles, wadso2001standards}. También pueden ser clasificados por el principio de funcionamiento, si compensan los flujos de energía o los acumulan \cite{gaisford2016principles}. Finalmente, dependiendo del rango de las potencias medidas, se tienen dos términos comúnmente usados: \keyword{microcalorimetría} para el caso de experimentos realizados en el rango de los microvatios \cite{wadso2001standards, wadso2003new}, mientras que para escalas de nanovatios son usados \keyword{nanocalorímetros} \cite{wadso2003new}.
+	
+	En particular el trabajo a realizar busca armar, poner en marcha y calibrar un microcalorímetro 2277 Thermal Activity Monitor. Esto implica un entendimiento del funcionamiento del calorímetro a nivel interno, desde las partes mecánicas, la etapa electrónica y los principios fisicoquímicos detrás del mismo. En este proyecto, por su naturaleza, se hace imperativo que una vez alcanzado el nivel de operación del calorímetro, se realice una calibración para constatar que el funcionamiento es correcto y concuerda con los resultados obtenidos por la literatura así como con un microcalorímetro moderno disponible en el grupo de investigación \textit{\groupname}.
+	
+\section{Objetivos}
+	\subsection{Objetivo general}
+		Poner en funcionamiento el calorímetro 2277 Thermal Activity Monitor con el que se cuenta, en funcionamiento y adicionalmente calibrar el equipo para su uso en las investigaciones activas del grupo \groupname.
+		
+	\subsection{Objetivos específicos}
+		\begin{itemize}
+			\item Ensamblar el equipo 2277 Thermal Activity Monitor.
+			\item Realizar el cableado y conexiones electrónicas pertinentes al mismo.
+			\item Calibración eléctrica, determinación de las señales de entrada y salida, flujo de las bombas hidráulicas y temperatura del baño.
+			\item Calibración química, determinación de la entalpía molar, energía libre de Gibbs, entropía, y constante de equilibrio, del acomplejamiento del catión bario con éter 18-corona-6.
+		\end{itemize}
+
+	\newpage
+
+\section{Justificación del proyecto}
+	En general la calorimetría permite una gran variedad de análisis, muchos de ellos cuentan con aplicaciones industriales, comerciales, biológicas y químicas, permitiendo el entendimiento de las interacciones moleculares en soluciones \cite{blandamer1998titration}. Una ventaja de la calorimetría es que no es específica, ni invasiva además de no depender de las propiedades electroquímicas y ópticas de un sistema dado, siendo esto de vital importancia para las investigaciones de procesos biológicos, el estudio del crecimiento bacteriano y para la detección de compuestos biológicos \cite{winkelmann2004application}. Por otro lado la calorimetría también permite el estudio de la termodinámica en sistemas de absorción, bien sea por la universalidad de la absorción física en las superficies como catalizadores, o en procesos industriales como la separación de mezclas de gases \cite{morrison1987calorimetry}. Finalmente la calorimetría es el método clásico para la determinación de propiedades termodinámicas en las muestras, entre estas se encuentran la capacidad calorífica, la entalpía, entropía y energía libre de Gibbs, las cuales constituyen el punto de partida de gran cantidad de estudios teóricos, desarrollos y producción industrial de un compuesto químico \cite{wang2005determination, gaisford2016principles}.
+
+	El calorímetro 2277 Thermal Activity Monitor con el que cuenta el grupo de investigación se encuentra desarmado, a la espera de su ensamble y puesta en funcionamiento. Este instrumento permite monitorear una gran variedad de reacciones químicas y bioquímicas, lo anterior debido a su capacidad de cuantificar procesos exotérmicos y endotérmicos. Estas reacciones pueden ser estudiadas en el rango de 5 - 80 $^\circ$C \cite{Suurkuusk}. Este rango de temperaturas se debe al uso de un baño termostatado de 25 litros. Cuatro balones de medición independientes se encuentran sumergidos en este baño, permitiendo medidas con desviaciones de temperatura inferiores a $\pm2\times10^{-4}$ $^\circ$C, alcanzando de esta manera medidas en el rango de microvatios \cite{Suurkuusk}. Es por esta razón que poner en marcha y calibrar el equipo con el que cuenta el grupo de investigación resulta una contribución importante para el mismo, así como para el \deptname\ en general.
+	
+\section{Metodología}
+	Para el ensamble del calorímetro se cuenta con el catálogo de partes, y el manual de instrucciones. En el primero se detallan y enumeran las partes del equipo, en la \autoref{fig:partes} se muestran ejemplos de los distintos sistemas con los que el calorímetro cuenta \cite{Suurkuusk}. 
+	
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}[b]{0.3\textwidth}
+			\includegraphics[width=\textwidth]{Figures/images_1.jpg}
+			\caption{Vista exterior del equipo con sus componentes.}
+			\label{fig:vistaExterior}
+		\end{subfigure}
+		~ 
+		\begin{subfigure}[b]{0.37\textwidth}
+			\includegraphics[width=\textwidth]{Figures/images_2.jpg}
+			\caption{Parte del sistema eléctrico del calorímetro.}
+			\label{fig:sistemaElectrico}
+		\end{subfigure}
+		~ 
+		\begin{subfigure}[b]{0.25\textwidth}
+			\includegraphics[width=\textwidth]{Figures/images_3.jpg}
+			\caption{Celda de medición.}
+			\label{fig:celda}
+		\end{subfigure}
+		\caption{Componentes exteriores del equipo y partes de los sistemas del calorímetro \cite{Suurkuusk}.}
+		\label{fig:partes}
+	\end{figure}
+	Usando esta información se llevará a cabo el ensamble del calorímetro así como las conexiones eléctricas.	A nivel electrónico, la liberación o absorción de energía térmica se mide usando una celda Peltier, las cuales tienen una respuesta proporcional en voltaje, de esta forma se obtiene una señal eléctrica a partir de pequeñas variaciones de temperatura en la celda de reacción. La señal eléctrica es procesada por el sistema digital del instrumento \cite{Suurkuusk}. De esta forma y siguiendo las instrucciones es posible realizar una calibración eléctrica del sistema.
+	
+	La calibración química puede realizarse de distintas maneras. En principio cualquier reacción que pueda ser llevada a cabo en un calorímetro, con condiciones controladas y cuyas propiedades termodinámicas sean bien conocidas, puede ser usada como una reacción de calibración \cite{wadso2001standards}. Sin embargo es recomendable que los reactivos involucrados en estas reacciones no requieran de algún tipo de purificación que pueda alterar el análisis \cite{wadso2001standards}.
+	
+	Se propone realizar una calorimetría de titulación como método de calibración química, lo anterior es importante porque una calibración eléctrica puede dar lugar a distribuciones de temperatura distintas en la celda de reacción, o generar patrones de flujo de calor distintos a una reacción química, esto puede generar errores sistemáticos en las medidas realizadas \cite{wadso2001standards}. La titulación es una técnica importante en la medida que permite la determinación simultánea de la entalpía molar y la constante de equilibrio de la reacción, por lo cual también se obtienen el cambio en la energía estándar de Gibbs y el cambio en la entropía estándar \cite{wadso2001standards}. 
+	
+	Para esta calibración es necesario contar con soluciones acuosas de cloruro de bario (\ce{BaCl2}) y éter 18-corona-6 (\ce{[C2H4O]6}) \cite{tellinghuisen2007optimizing, mizoue2004calorimetric, wadso2001standards}. La reacción de acomplejamiento es 1:1, de la siguiente forma:
+	\begin{equation}
+		\ce{Ba^{2+}(ac) + [C2H4O]6(ac) -> Ba^{2+}.[C2H4O]6(ac)}
+	\end{equation}
+	
+	Dichas soluciones deben encontrarse en el rango de concentraciones de 1 mM a 10 mM para el éter y 10 mM hasta 100 mM para el cloruro de bario. Dentro de este rango, existe evidencia experimental que muestra que no hay una variación significativa de las cantidades termodinámicas medidas \cite{wadso2001standards, mizoue2004calorimetric}. Considerando el volumen de las celdas con las que cuenta el equipo, se propone usar 1.5 mL de la solución de éter. Las soluciones deben ser desgasificadas y  termostatadas a 25 $^\circ$C, con el objetivo de limitar el error experimental introducido por diferencias de temperatura causadas por burbujas \cite{mizoue2004calorimetric, tellinghuisen2007optimizing, duff2011isothermal}. 
+	
+	En el calorímetro el ba\~no debe encontrarse a 25 $^\circ$C y deben usarse dos de las cuatro celdas disponibles. La primera se considera como referencia y debe contener al disolvente únicamente, en este caso 1.5 mL de agua \cite{Suurkuusk}. En la segunda se adiciona el mismo volumen de la solución de éter, una vez la línea base del calorímetro se encuentra estable, se adicionan una a una 30 alícuotas de la solución de cloruro de bario, con tiempos entre inyección mayores a $\tau = 6$ minutos, tanto a la celda de referencia como a la de reacción \cite{mizoue2004calorimetric, duff2011isothermal}. Cada inyección modifica la temperatura de la celda respecto a la referencia, razón por la cual las termopilas Peltier, deberán compensarla, la energía requerida por las celdas se cuantifica en función del tiempo, esto da lugar a una gráfica de potencia en función del tiempo \cite{duff2011isothermal}. Para cada inyección, es posible calcular el cambio en la energía integrando la potencia usada por el sistema. La gráfica de los cambios energéticos en función de la fracción molar (\ce{[Ba^{2+}]}/[éter]) permite obtener  las propiedades termodinámicas \cite{duff2011isothermal, mizoue2004calorimetric}. La diferencia entre el valor mínimo de la isotérma y la línea base de esta corresponde con la entalpía molar estándar $\Delta H_m$. La derivada de la isotérma en el punto equimolar, da lugar a la constante de afinidad $K_a$. Finalmente con esta es posible determinar los cambios en la energía libre de Gibbs y la entropía.
+	
+	\begin{equation}
+		\Delta G_m = -RT\ln K_a = \Delta H_m - T\Delta S_m
+	\end{equation}
+	
+	Para determinar la capacidad calorífica es necesario realizar el mismo experimento a distintas temperaturas, dado que:
+	\begin{equation}
+		C_{p, m} = \left(\dfrac{\partial H_m}{\partial T}\right)_p
+	\end{equation}
+	
+	En el caso de esta titulación los valores reportados por IUPAC corresponden con \cite{wadso2001standards}:
+	\begin{itemize}
+		\item $\Delta H_m = -(31.42 \pm 0.20)$ kJ mol$^{-1}$
+		\item $K_a = (5.90 \pm 0.20)\times10^3$ mM
+		\item $C_{p,m} = 126$ J K$^{-1}$ mol$^{-1}$
+	\end{itemize}
+	
+	\newpage
