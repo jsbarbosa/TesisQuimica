@@ -34,13 +34,19 @@
 \chapter{Códigos}\label{anx: codigos}
 	\section{Firmware microcontrolador}
 		\lstinputlisting[language = C]{../MeasuringTools/micro/main.c}
-	
-	\section{Software de Temperatura}
+		
+	\section{Determinación de intervalos estacionarios en la calibración del sistema de monitoreo de temperatura}
+		\lstinputlisting{../Data/TemperatureCalibration/calibration.py}
+		
+	\section{Software de Temperatura}\label{anx: interfaz}
 		\subsection{Comunicaciones}
 			\lstinputlisting{../MeasuringTools/TemperatureSoft/com.py}
 			
 		\subsection{Interfaz gr\'afica}
 			\lstinputlisting{../MeasuringTools/TemperatureSoft/gui.py}
+			
+	\section{Disco 3D para sensor térmico en el calorímetro}
+		\lstinputlisting{../disk_filler.scad}
 			
 	\section{Determinación de los valores de una calibración estática}\label{anx: staticCalibration}
 		\lstinputlisting{../Data/ElectricalCalibrations/calibrations.py}

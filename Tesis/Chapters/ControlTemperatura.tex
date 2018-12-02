@@ -36,7 +36,7 @@
 			\hline
 			\textbf{Baño interno (\grad{})} & A ($10^4$ $\Omega$) & B ($10^3$ $\Omega$) & C ($10^2$ $\Omega$) & D ($10^1$ $\Omega$) & \textbf{Baño externo (\grad{})} \\
 			\hline
-			25.0 & 3 & 2 & 4 & 9 & 22.0 \\
+			25,0 & 3 & 2 & 4 & 9 & 22,0 \\
 			\hline
 		\end{tabular}
 		\label{tb: decadeResistorsBefore}
@@ -72,7 +72,8 @@
 		\centering
 		\begin{subfigure}{0.75\textwidth}
 			\includegraphics[width=\linewidth]{Figures/Sketch_schem}
-			\caption{Conexi\'on al microcontrolador.}	
+			\caption{Conexi\'on al microcontrolador.}
+			\label{fig: circuito}
 		\end{subfigure}
 		\begin{subfigure}{0.23\textwidth}
 			\includegraphics[width=\linewidth]{Figures/Sensor}
@@ -82,4 +83,97 @@
 		\caption{Circuito del sistema de monitoreo de temperatura.}	
 	\end{figure}
 
-	Los sensores a su vez fueron conectados a un microcontrolador ATtiny 13 \cite{attiny13}.
+	Los sensores, uno para el baño interno, baño externo y temperatura ambiente, a su vez fueron conectados a un microcontrolador ATtiny 13 \cite{attiny13} (\autoref{fig: circuito}), el cual hace las veces de central de procesamiento que unifica las señales de los tres sensores y las envía a un computador usando el protocolo de comunicación UART (\textit{Universal Asynchronous Receiver-Transmitter} por sus siglas en inglés). Para convertir las señales de los sensores a un valor digital se usa el ADC (\textit{Analog to Digital Converter} por sus siglas en inglés) con el que cuenta el microcontrolador. El ADC compara el voltaje de la señal de entrada con un valor de referencia de voltaje y determina que fracción de voltaje corresponde la señal de entrada, este valor relativo ($k$) se encuentra entre 0 y 2$^{n}$ ($n$ es el número de bits del ADC), donde 0 implica un valor igual al de la tierra del circuito, y 2$^n$ tiene lugar cuando la señal de entrada tiene el mismo valor que el voltaje de referencia, los valores intermedios son lineales con los límites, de tal forma que es posible reconstruir el valor de la señal en voltios mediante la siguiente ecuación:
+	\begin{equation}
+		V = \left(\dfrac{k}{2^n}\right)V_{\text{ref}}
+	\end{equation}
+	
+	En el caso del ATtiny 13, se cuenta con 10 bits en el ADC con cuatro canales, tres de los cuales son usados para los sensores. Como voltaje de referencia se usa un regulador interno del microcontrolador cuyo valor es 1,1 V \cite{attiny13}. Un voltaje de salida del sensor de 1,1 V en el sensor es cercano a 110 \grad{} y 0,0 V cercano a 0 \grad{} pues el fabricante asegura que por cada grado Celsius el voltaje de salida aumenta en 10 mV. El número de bits del ADC permite una resolución cercana a los 0.1 \grad{}, puesto que se tiene que 110 \grad{} pueden ser divididos en $2^{10} = 1024$ niveles distintos. Sin embargo, para lograr una resolución de 0.01 \grad{} se usó una técnica conocida como sobremuestreo \cite{grewal2006oversampling}. Esta técnica tiene sus orígenes en el teorema de Nyquist, el cual establece que para reconstruir una señal es necesario muestrear una señal con el doble de la frecuencia de la frecuencia máxima en la señal \cite{alexander2009fundamentals}. En el caso de la temperatura de los baños de agua y ambiente, se espera que la frecuencia máxima sea relativamente baja, del orden del tiempo de respuesta del sensor el cual es del orden de segundos. En particular se tiene que para $w$ bits adicionales en el ADC es necesario muestrear $4^w$ veces adicionales la señal. Dado que se tiene un rango cercano a los 100 grados y se quiere una resolución de 0,01 \grad{} es necesario diferenciar 10.000 niveles distintos de voltaje, lo cual implica al menos 14 bits ($2^{14}=$16.384), sin embargo, se eligen muestrear 4096 veces con frecuencia de 150 kHz, lo cual equivale a 16 bits en el ADC.
+	
+	Los sensores fueron calibrados usando el baño externo, y el termómetro de mercurio previamente usado en la verificación de la lectura de temperatura del sensor interno del calorímetro. Para esto se realizó una rampa de calentamiento discreta de 10 \grad{} hasta 50 \grad{} con pasos de 5 \grad{} y tiempos de estabilización de 20 minutos. Se escribió un algoritmo que calcula el valor promedio y desviación estándar de una lectura de voltaje para los intervalos estacionarios de la rampa. Este algoritmo realiza lo siguiente:
+	\begin{enumerate}
+		\item Para cada instante de tiempo considera el promedio de voltaje de los tres sensores.
+		\item Saca el valor absoluto de la derivada de los datos en el tiempo.
+		\item Aplica un filtro de medianas con kernel 507 sobre los datos anteriores (líneas continuas rojas en la \autoref{fig: calAlgorithm}).
+		\item Los puntos con valores menores a 0,05 se les asigna el valor 0, para los otros valores se asigna 0,5 (lineas segmentadas en la \autoref{fig: calAlgorithm}).
+		\item Se considera que los puntos donde el valor anterior corresponde a 0 son estables, sobre estos intervalos calcula el promedio y desviación estándar de cada sensor.
+	\end{enumerate}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{../Data/TemperatureCalibration/dV-t}
+		\caption{Voltajes registrados en la rampa de calentamiento de calibración de los sensores.}
+		\label{fig: calAlgorithm}
+	\end{figure}
+
+	Los valores de voltaje de los intervalos estacionarios de la rampa fueron relacionados con la temperatura del termómetro de mercurio en la \autoref{fig: voltageTemperature}, en donde se observó una tendencia lineal, cuya pendiente es cercana a 10 mV, lo cual concuerda con lo reportado por el fabricante \cite{instruments1999lm35}. A partir de las relaciones obtenidas con la regresión lineal, se reconstruyó la \autoref{fig: calAlgorithm} en función de la temperatura.
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}{0.45\linewidth}
+			\includegraphics[width=\linewidth]{../Data/TemperatureCalibration/V-T}
+			\caption{Voltajes registrados en la rampa de calentamiento de calibración de los sensores.}
+		\end{subfigure}
+		\begin{subfigure}{0.45\linewidth}
+			\includegraphics[width=\linewidth]{../Data/TemperatureCalibration/T-t}
+			\caption{Voltajes registrados en la rampa de calentamiento de calibración de los sensores.}
+		\end{subfigure}
+		\caption{Resultados de la calibración del sistema de monitoreo de la temperatura.}
+		\label{fig: voltageTemperature}
+	\end{figure}
+	\pagebreak
+
+	Una vez calibrados los sensores, se escribió un programa en Python para facilitar la visualización de los datos en tiempo real, cuyo código se encuentra en la \autoref{anx: interfaz}. Además, para introducir el sensor usado en el baño interno del calorímetro sin que este estuviera expuesto directamente a la temperatura ambiente, se imprimió una tapa en 3D con un filamento de PLA (ácido poliláctico) para usar uno de los espacios reservados para un cilindro de medición del calorímetro.
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}{0.45\linewidth}
+			\includegraphics[width=\linewidth]{Figures/PLAdisk}
+			\caption{Disco impreso para facilitar el acceso del sensor al baño térmico del calorímetro.}
+		\end{subfigure}
+		\begin{subfigure}{0.45\linewidth}
+			\includegraphics[width=\linewidth]{Figures/temperatureReader}
+			\caption{Interfaz gráfica para el monitoreo de la temperatura en tiempo real.}
+		\end{subfigure}
+		\caption{Accesorios para el sistema de monitoreo de temperatura.}
+	\end{figure}
+
+	Con el monitoreo de temperatura establecido fue posible determinar el efecto del baño térmico externo sobre la temperatura del calorímetro. Por ejemplo, para el caso de las oscilaciones que se muestran en la \autoref{tb: temperatureRegister}, se encuentran relacionadas con la temperatura del baño externo, para el caso de temperaturas muy bajas del baño externo se observa que la temperatura del baño interno se encuentra estable, sin embargo los calefactores se encuentran trabajando fuera del rango completamente prendidos, y a temperaturas del baño externo intermedias, la temperatura del baño interno oscila. Esto se puede entender si se considera que los sistemas térmicos presentan inercia, por lo cual mientras el sensor de temperatura registra una temperatura menor a la deseada, aplicará sobre los calentadores potencia, una vez se sobre pase este valor los calentadores se apagarán pero el agua de los alrededores se continuará calentando por algún tiempo, posteriormente el sistema detectará que la temperatura ha disminuído prendiendo nuevamente los calentadores haciendo que la temperatura en general oscile como se muestra en la \autoref{fig: temperatureRipple}.
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}{0.49\linewidth}
+			\includegraphics[width=\linewidth]{../Data/TemperatureStability/temperatureRipple}
+			\caption{Oscilaciones debidas a una temperatura del baño externo intermedia.}
+			\label{fig: temperatureRipple}
+		\end{subfigure}
+		\begin{subfigure}{0.49\linewidth}
+			\includegraphics[width=\linewidth]{../Data/TemperatureStability/temperatureSensibility}
+			\caption{Caída de la temperatura del baño interno debido al aumento de 0,20 \grad{} en el baño externo.}
+			\label{fig: temperatureSensibility}
+		\end{subfigure}
+		\caption{Efecto de la temperatura del baño externo sobre la temperatura del baño interno.}
+		\label{fig: externalEffects}
+	\end{figure}
+
+	En la \autoref{fig: temperatureSensibility} se observa cómo la temperatura del calorímetro puede variar bruscamente cuando los calentadores trabajan fuera de rango. En el caso de esta figura, la temperatura del calorímetro se encontraba estable, el calentador fino siempre en el rango de trabajo, mientras que el precalentador ocasionalmente salía del rango de trabajo, sin embargo, al aumentar la temperatura del baño 0,20 \grad{} el equipo disminuyó su temperatura y no volvió aumentar. 
+	
+	En general la \autoref{fig: externalEffects} muestra la dificultad de estabilizar el equipo a una temperatura determinada, puesto que se debe encontrar la pareja correcta de valores en las resistencias de décadas, junto con la temperatura del baño externo, siendo los dos particularmente sensibles al valor del otro. Pues como fue mencionado anteriormente, aunque en la \autoref{fig: temperatureSensibility} el sistema parezca estable, los calentadores internos están funcionando fuera del rango.
+	
+	Finalmente, se logró determinar la configuración en donde los calentadores se encuentran en el rango de trabajo y el equipo es estable a $25.02 \pm 0.03$ \grad{}, esta configuración se muestra en la \autoref{tb: decadeResistorsAfter}. Además, el sensor de temperatura ambiente, probó ser útil, pues la pequeña variación en la temperatura interna del calorímetro se encuentra correlacionada con la temperatura ambiente, pues en la \autoref{fig: temperatureResults} se observa que los máximos de temperatura interna ocurren en los mínimos de temperatura ambiente.
+	\begin{table}[h]
+		\centering
+		\caption{Valores de las resistencias de década, para una temperatura de 25 \grad{}, obtenida en octubre.}
+		\begin{tabular}{r|cccc|l}
+			\hline
+			\textbf{Baño interno (\grad{})} & A ($10^4$ $\Omega$) & B ($10^3$ $\Omega$) & C ($10^2$ $\Omega$) & D ($10^1$ $\Omega$) & \textbf{Baño externo (\grad{})} \\
+			\hline
+			$25.02 \pm 0.03$ & 3 & 3 & 6 & 5 & 21,5 \\
+			\hline
+		\end{tabular}
+		\label{tb: decadeResistorsAfter}
+	\end{table}
+
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{../Data/TemperatureStability/temperatureStability}
+		\caption{Efecto de la temperatura del baño externo sobre la temperatura del baño interno.}
+		\label{fig: temperatureResults}
+	\end{figure}
