@@ -64,9 +64,22 @@
 		\label{tb: temperatureRegister}
 	\end{table}
 	
-	Sin embargo, esta no fue la única configuración probada, pues también se trató de estabilizar el equipo usando: 2977, que dio lugar a las siguientes temperaturas de baño interno 25,44 \grad{}, y 28,38 \grad{} luego de 5 días. De manera similar se probaron 3000, 3021, 3040, 3100, 3121, 3140, 3160 ninguna de las cuales presentó una temperatura estable. Debido a la dificultad de estabilizar el equipo a una temperatura determinada, se decidió construir un sistema de monitoreo automatizado para facilitar esta tarea, de esta manera se podría saber el histórico de una configuración, si el sistema está en calentamiento, estable, u oscilando.
+	Sin embargo, esta no fue la única configuración probada, pues también se trató de estabilizar el equipo usando: 2977 (A,B,C,D), que dio lugar a las siguientes temperaturas de baño interno 25,44 \grad{}, y 28,38 \grad{} luego de 5 días. De manera similar se probaron 3000, 3021, 3040, 3100, 3121, 3140, 3160 ninguna de las cuales presentó una temperatura estable. Debido a la dificultad de estabilizar el equipo a una temperatura determinada, se decidió construir un sistema de monitoreo automatizado para facilitar esta tarea, de esta manera se podría saber el histórico de una configuración, si el sistema está en calentamiento, estable, u oscilando.
+	
 	\section{Sistema de monitoreo}
-	
-	
+	De todas las acciones que se hicieron a lo largo del proyecto, la estabilizaci\'on de la temperatura es la que llev\'o m\'as tiempo. Esto se debi\'o a que existen dos variables que determinan una temperatura en el calor\'imetro, por un lado la configuraci\'on de las resistencias de d\'ecada, y el ba\~no externo, adem\'as se debe tener en cuenta el tiempo de estabilizaci\'on del calor\'imetro, el cual puede tomar cerca de 6 horas en completarse. Para monitorear el estado de la temperatura del ba\~no interno se construy\'o un circuito con tres sensores de temperatura, los sensores LM39 fueron elegidos debido a que presentan una respuesta lineal en voltaje, y tienen un rango de trabajo de 2 \grad{} a 120 \grad{} \cite{instruments1999lm35}. Cada uno de estos sensores fue conectado a tres cables como se muestra en la \autoref{fig: sensors}, y posteriormente fue cubierto con silicona y un cable termoencogible para aislar el sensor del agua. 	
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}{0.75\textwidth}
+			\includegraphics[width=\linewidth]{Figures/Sketch_schem}
+			\caption{Conexi\'on al microcontrolador.}	
+		\end{subfigure}
+		\begin{subfigure}{0.23\textwidth}
+			\includegraphics[width=\linewidth]{Figures/Sensor}
+			\caption{Cableado del sensor LM35.}	
+			\label{fig: sensors}
+		\end{subfigure}
+		\caption{Circuito del sistema de monitoreo de temperatura.}	
+	\end{figure}
 
-	De todas las acciones que se hicieron a lo largo del proyecto, la estabilizaci\'on de la temperatura es la que llev\'o m\'as tiempo. En gran medida esto fue debido al tiempo de estabilizaci\'on del equipo, el cual puede tomar cerca de 6 horas en completarse.
+	Los sensores a su vez fueron conectados a un microcontrolador ATtiny 13 \cite{attiny13}.
