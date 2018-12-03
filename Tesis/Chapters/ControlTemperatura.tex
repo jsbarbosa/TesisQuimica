@@ -8,7 +8,6 @@
 %----------------------------------------------------------------------------------------
 
 % Define some commands to keep the formatting separated from the content 
-\newcommand{\grad}[0]{$^\circ$C}
 %\newcommand{\tabhead}[1]{\textbf{#1}}
 %\newcommand{\code}[1]{\texttt{#1}}
 %\newcommand{\file}[1]{\texttt{\bfseries#1}}
@@ -16,7 +15,7 @@
 
 %----------------------------------------------------------------------------------------
 
-\chapter{Control de la temperatura}
+\chapter{Control de la temperatura}\label{ch: thermal}
 	El sistema cuenta con dos calentadores de precisión al interior del baño termostatado de 25 litros. Estos calentadores junto con el ba\~no externo determinan la temperatura de trabajo del equipo. El ba\~no externo se usa con el objetivo de mantener siempre activos los calentadores internos en alg\'un nivel de potencia intermedio, pues el ba\~no externo, al tener una temperatura inferior agregar una carga permanente a los calentadores internos \cite{Suurkuusk}. Para monitorear la temperatura del ba\~no el calor\'imetro cuenta con dos termistores, el primero para trabajar a temperaturas inferiores a 50 \grad{} y el segundo para temperaturas superiores a este valor. La se\~nal generada por uno de estos termistores se compara con un valor de resistencia definido por el usuario. La resistencia y por ende la temperatura del equipo se fijan usando cuatro resistencias de década, esto es que cada resistencia es una potencia de 10 menor que la anterior, las cuales se encuentran en la parte inferior del calor\'imetro, en la \autoref{fig: decadeResistors} corresponden A, B, C, y D, de esta manera se pueden realizar experimentos a temperaturas en el rango de 5 a 80 \grad{}. El diagrama del sistema de control t\'ermico del calor\'imetro se muestra en el \autoref{anx: imagenes} como \autoref{fig: controlTermico}.
 	
 	\begin{figure}[h]

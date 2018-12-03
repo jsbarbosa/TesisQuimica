@@ -291,18 +291,17 @@ headsepline, % Uncomment to get a line under the header
 % Include the chapters of the thesis as separate files from the Chapters folder
 % Uncomment the lines as you write the chapters
 
-%\include{Chapters/Intro}
+\newcommand{\grad}[0]{$^\circ$C}
+\include{Chapters/Intro}
 \include{Chapters/Ensamble}
 \include{Chapters/ControlTemperatura}
-%\include{Chapters/CalibracionElectrica} 
-%\include{Chapters/CalibracionQuimica} 
-%\include{Chapters/Conclusiones}
+\include{Chapters/CalibracionElectrica} 
+\include{Chapters/CalibracionQuimica} 
+\include{Chapters/Conclusiones}
 
 %----------------------------------------------------------------------------------------
 %	THESIS CONTENT - APPENDICES
 %----------------------------------------------------------------------------------------
-
-
 
 % Include the appendices of the thesis as separate files from the Appendices folder
 % Uncomment the lines as you write the Appendices
@@ -318,7 +317,7 @@ headsepline, % Uncomment to get a line under the header
 \printbibliography[heading=bibintoc, title={Referencias}]
 
 \appendix % Cue to tell LaTeX that the following "chapters" are Appendices
-%\include{Chapters/Anexos}
+\include{Chapters/Anexos}
 
 %----------------------------------------------------------------------------------------
 
