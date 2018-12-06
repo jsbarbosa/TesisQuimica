@@ -17,13 +17,162 @@
 %----------------------------------------------------------------------------------------
 
 \chapter{Calibraci\'on Qu\'imica}\label{ch: chemical}
-	La calibraci\'on qu\'imica consiste en contrastar las propiedades termodin\'amicas de un sistema qu\'imico, obtenidas usando el calor\'imetro con aquellas reportadas en la literatura. Para esto se estudia la reacci\'on del \'acido clorhidrico con bicarbonato de potasio. Esta reacci\'on presenta varias ventajas: por un lado hace uso de reactivos de f\'acil acceso, es una reacci\'on con esqueometr\'ia 1:1, ha sido estudiada previamente, y adem\'as, es usada en calibraciones de equipos calorim\'etricos., como el calor\'imetro de titulaci\'on NanoITC de \textit{TA instruments}.
+	La calibraci\'on qu\'imica consiste en contrastar las propiedades termodin\'amicas de un sistema qu\'imico, obtenidas usando el calor\'imetro con aquellas reportadas en la literatura, esto es de vital importancia dado que las calibraciones el\'ectricas con frecuencia no transfieren a la celda el 100 \% de la potencia aplicada, as\'i mismo la distribuci\'on de calor puede ser considerablemente distinta a la de una reacci\'on. Dos sistemas qu\'imicos fueron usados para la realizaci\'on de la calibraci\'on qu\'imica: la reacci\'on del \'acido clorhidrico con bicarbonato de potasio, y la disoluci\'on de 1-propanol en agua. Estas sistemas hacen uso de reactivos de f\'acil acceso, han sido estudiados previamente en los procesos de calibraci\'on de equipos calorim\'etricos, como el calor\'imetro de titulaci\'on NanoITC de \textit{TA Instruments} con el que cuenta el grupo de \groupname{} \cite{demarse2011calibration, adao2012chemical, nanoitc}. En el caso de la neutralizaci\'on del \'acido clorh\'idrico es posible obtener par\'ametros termodin\'amicos como la entalp\'ia de reacci\'on, entrop\'ia y energ\'ia libre de Gibbs.
+
+\section{Sistema de inyecci\'on}
+	El sistema de inyecci\'on consiste en un motor de pasos acoplado a un tornillo de precisión, el cual controla el desplazamiento del émbolo de la jeringa de inyección. El fluido saliente de la jeringa se desvía usando una manguera de cromatografía líquida de acero inoxidable, el cual se conecta en el otro extremo a un canal que lleva el fluido hasta la celda de medición (\autoref{fig: sistemaInyeccion}).
 	
-\section{Preparaci\'on de las soluciones de HCl}\label{sec: soluciones}
-	Para la preparaci\'on de las soluciones, se hace uso de forma sistem\'atica de una balanza Ohaus Analytical Plus (AP250D) y un dens\'imetro Anton Paar DSA5000M. La balanza presenta incertidumbres de $1\times10^{-5}$ y $1\times10^{-4}$ g dependiendo del rango usado, para el primer caso la masa medida debe ser inferior a 80 g y en el segundo no puede superar los 250 g, siendo esta la capacidad máxima de la balanza. En el caso del densímetro, son necesarios volúmenes cercanos a 2 mL de una muestra líquida, con esto el equipo determina la densidad de la sustancia con incertidumbres de $1\times10^{-6}$ g/cm$^{-3}$ para una temperatura determinada por el usuario. Adem\'as, en el proceso de preparaci\'on se hace necesaria la toma de dos al\'icuotas de 30 $\mu$L y 170 $\mu$L, para el HCl y \ce{KHCO3} correspondientemente, por lo cual se usa una micropipeta pipet4u Performance con rango de 20 a 200 $\mu$L.
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.6\linewidth]{Figures/sistemaInyeccion}
+		
+		\caption{Sistema de inyección construido como alternativa al uso de las canulas.}
+		\label{fig: sistemaInyeccion}
+	\end{figure}
+	
+	Tanto la aguja de la jeringa como la manguera de cromatografía, corresponden con una alternativa para ingresar el fluido hasta la celda que difiere del mecanismo original en los volúmenes usados y el tipo de jeringas. Originalmente, para introducir una sustancia en la celda se hace uso de una jeringa de vidrio Hammilton de 250 $\mu$L la cual cuenta con una canula soldada en la punta de esta. Al momento de realizar las calibraciones qu\'imicas, no se contaba con una jeringa de este tipo con la canula conectada, y a pesar que varios intentos fueron realizados para soldar la punta con la canula de oro y acero inoxidable, no fue posible juntar las mismas, en parte dado que el diámetro de la canula es considerablemente pequeño, siendo difícil de ver a simple vista. Lo anterior tiene consideraciones especiales, pues los diámetros de la jeringa y la manguera no son compatibles, por lo cual se hace necesario usar cinta de teflón para evitar al máximo fugas en el sistema. Otro aspecto a considerar es que el volumen interno de la manguera cromatogr\'afica es mucho mayor al de la canula, por lo cual se debe tener especial cuidado por los volúmenes introducidos, pues no se debe exceder la capacidad de 4 mL de la celda.
+	
+	\subsection{Control por automatizado}\label{ssec: jeringa}
+	Para acceder al control de la jeringa, en el menú superior: \texttt{System > Auxiliary > Pump}. En el momento se cuenta con un único agitador para la celda, por lo cual sólo se encuentra instalado uno de los controladores de jeringa tipo \texttt{Lund}, por esta razón el sistema debe detectar automáticamente únicamente el primer controlador (\texttt{Installed = yes}). La configuración de una jeringa consiste en escribir el volumen de esta (\texttt{Syringe volume}), la velocidad con la que se quiere mover el émbolo (\texttt{Plunger speed}), su longitud (\texttt{Syringe length}) y el volumen de inyección (\texttt{Dispense volume}).
+	
+	\begin{figure}[h]
+		\centering
+		\begin{subfigure}[b]{0.4\textwidth}
+			\includegraphics[width=\linewidth]{Figures/jeringa_menu}
+			\caption{Ingreso al menú.}
+			\label{fig: menuJeringa}
+		\end{subfigure}
+		\begin{subfigure}[b]{0.55\textwidth}
+			\includegraphics[width=\linewidth]{Figures/jeringa_config}
+			\caption{Menú de configuración}
+			\label{fig: configJeringa}
+		\end{subfigure}
+		\caption{Configuración de la jeringa en Digitam.}
+	\end{figure}
+	\newpage
+	
+	Una vez se encuentra configurada la jeringa, es posible usarla de dos maneras distintas. Por un lado se tiene el modo manual, donde el usuario tiene la posibilidad de avanzar rápidamente (\texttt{Fast forward}), por ejemplo para disminuir al distancia entre el émbolo y el pistón. En este modo, también es posible aumentar esta distancia (\texttt{Fast backward}), avanzar un milímetro (\texttt{One milimeter forward}) y moverse la distancia requerida para que la jeringa dispense el volumen por inyección (\texttt{Dispense}). Por otro lado, el control manual resulta útil antes de iniciar un experimento, pues con frecuencia será necesario ajustar la distancia entre el pistón y el émbolo para que haya contacto. Además, en el caso de ser requerida una calibración de la jeringa es posible usar el botón de dispensar para determinar si el volumen dispensado corresponde con el volumen configurado.
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.5\linewidth]{Figures/jeringa_manual}
+		\caption{Panel del uso manual del controlador de la jeringa.}
+		\label{fig: manualJeringa}
+	\end{figure}
+	
+	El modo automático se configura al momento de definir el método del experimento. Para esto es necesario expandir la opción de \texttt{Auxiliary system} en el panel izquierdo del menú y seleccionar el  \texttt{Pump and flow control}. Se debe tener en cuenta la sección del experimento que se está configurando. En el caso de la \autoref{fig: autoJeringa}, sólo existe la sección de \texttt{Baseline}, en esta sección se busca realizar 20 inyecciones, cada una con el volumen de dispensación y velocidad configurados en la \autoref{fig: configJeringa}, y 300 segundos de espera entre cada inyección.
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.5\linewidth]{Figures/jeringa_experimento}
+		\caption{Panel de configuración de la jeringa en modo automático.}
+		\label{fig: autoJeringa}
+	\end{figure}
+	
+	\subsection{Calibraci\'on de la jeringa}
+	Si bien el volumen de una jeringa es bien conocido, la longitud del émbolo es un parámetro que con frecuencia no se encuentra fácilmente. El controlador de la jeringa depende de este valor para relacionar la longitud que debe expandir el pistón para dispensar el volumen $V_d$. Por esta razón, para determinar la longitud correcta de la jeringa que debe ser configurada, se usaron distintos valores de esta y se midió la masa de agua tipo 1 desplazada, para cada valor de longitud se tomaron 3 medidas, los cuales se muestran en la \autoref{tb: syringeCal}.
+	\begin{table}[h]
+		\centering
+		\caption{Masa dispensada por la jeringa usando diferentes longitudes y un $V_d = 100.000$ $\mu$L}
+		\small
+		\begin{tabular}{p{1.7cm}|p{1.3cm}p{1.3cm}p{1.3cm}|p{2cm}p{2cm}}
+			\hline
+			\textbf{Longitud (mm)} &  \textbf{Masa 1 (g)} &  \textbf{Masa 2} (g) &  \textbf{Masa 3 (g)} &  \textbf{Promedio (g)} & \textbf{Desviacion (g)} \\
+			\hline
+			28,000 & 0,08194 & 0,08196 & 0,08262 & 0,0822 & 0,0004 \\
+			29,000 & 0,08573 & 0,08673 & 0,08648 & 0,0863 & 0,0005 \\
+			30,000 & 0,09003 & 0,08884 & 0,08970 & 0,0895 & 0,0006 \\
+			31,000 & 0,09270 & 0,09322 & 0,09263 & 0,0928 & 0,0003 \\
+			32,000 & 0,09551 & 0,09536 & 0,09538 & 0,0954 & 0,0001 \\
+			33,000 & 0,09895 & 0,09825 & 0,09870 & 0,0986 & 0,0004 \\
+			34,000 & 0,10172 & 0,10176 & 0,10137 & 0,1016 & 0,0002 \\
+			35,000 & 0,10409 & 0,10318 & 0,10422 & 0,1038 & 0,0006 \\
+			36,000 & 0,10679 & 0,10593 & 0,10757 & 0,1068 & 0,0008 \\
+			37,000 & 0,10958 & 0,11015 & 0,10993 & 0,1099 & 0,0003 \\
+			38,000 & 0,11384 & 0,11327 & 0,11360 & 0,1136 & 0,0003 \\
+			\hline
+		\end{tabular}
+		\label{tb: syringeCal}
+	\end{table}
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=\linewidth]{../Data/Syringe/syringe_cal.png}
+		\caption{Curva de calibraci\'on de la jeringa usada.}
+		\label{fig: syringeCal}
+	\end{figure}
+	
+	Con el termómetro de mercurio usado en la calibración térmica de los sensores de temperatura se midió la temperatura del agua usada en la calibración de la jeringa, dando un valor de 17.7 $^\circ$C. El densimetro usado en la \autoref{sec: soluciones} fue configurado para realizar una lectura a esta misma temperatura, con lo cual se obtuvo un valor de densidad de 0.998679 g/cm$^3$. Con esta información, es posible construir una curva que permite inferir la configuración a usar de la jeringa, la cual, junto con el valor escogido, se muestran en la \autoref{fig: syringeCal}. Para un volumen de dispensación de 100 $\mu$L, se obtuvo una longitud de 33,213 mm.	
+
+\section{Calibraci\'on 1-propanol y agua}
+	La disoluci\'on de 1-propanol en agua constituye otro m\'etodo reportado por varios autores para realizar una calibraci\'on qu\'imica \cite{briggner1991test, nanoitc, demarse2011calibration, adao2012chemical}. Un gr\'afico de energ\'ia transferida en forma de calor en funci\'on del n\'umero de inyecciones o el volumen total inyectado, debe seguir una tendencia lineal \cite{demarse2011calibration, nanoitc, adao2012chemical}. 
+	
+\subsection{Preparaci\'on de la soluci\'on 3 \%}
+	Para conocer la masa de agua que se debe adicionar para obtener una soluci\'on con concentraci\'on final $P$ en porcentaje masa, a partir de una masa $m'_\text{total}$ de una soluci\'on con concentraci\'on $P'$ conocida, se usa la siguiente ecuaci\'on:
+	\begin{equation}\label{eq: massConcentration}
+		P = \dfrac{m_\text{propanol}}{m_\text{total}} = \dfrac{P'm'_\text{total}}{m_\text{\ce{H2O}} + m'_\text{total}} \longrightarrow m_\text{\ce{H2O}} = \left(\dfrac{P'}{P} -1\right)m'_\text{total}
+	\end{equation}
+	
+	Para un gramo de 1-propanal (99,8 \% LiChrosolv para cromatograf\'ia l\'iquida), fueron medidos 33,6457 g de agua tipo 1 previamente desgasificada de manera an\'aloga a las soluciones de HCl y \ce{KHCO3}. Sobre el agua se adicionaron 1.0290 g de 1-propanol, para obtener una soluci\'on final de 1-propanol de 2,96 \%, cuya densidad a 20 \grad{} es 0.993487 g/cm$^3$.
+	
+	\subsection{Realizaci\'on de los experimentos}\label{sec: method}
+	El m\'etodo experimental est\'a dividido en cuatro partes:
+	\begin{enumerate}
+		\item \textbf{Pause}: En la etapa inicial del experimento se busca medir el estado de la línea base por 120 minutos consecutivos.
+		\item \textbf{Baseline}: Luego de tener datos sobre el estado sin perturbar del sistema, se realiza una calibración dinámica para obtener un ajuste fino de los parámetros de ganancia y nivel del cero de la señal. 
+		\item \textbf{Pause:} En este punto se realiza una calibraci\'on est\'atica para confirmar que la calibraci\'on din\'amica fue correcta. Para esto, se aplican 300 $\mu$W sobre la celda por 30 minutos, posteriormente se retira la potencia y se esperan 50 minutos para la estabilizaci\'on de la linea base.
+		\item \textbf{Main:} Una vez estabilizada la linea base, se realizan 30 inyecciones sucesivas con 10 minutos de espera entre cada inyecci\'on, la velocidad de inyecci\'on es de 50,018 $\mu/s$ y el volumen de inyecci\'on es de 51,185 $\mu$L.
+	\end{enumerate}
+	
+	Con esta soluci\'on tres experimentos fueron realizados, las cantidades usadas en cada uno de ellos se muestra en la \autoref{tb: propanolQuantity}.
+	
+	\begin{table}[h]
+		\centering
+		\caption{Experimentos realizados con la soluci\'on 2,96\% de 1-propanol.}
+		\begin{tabular}{cccc}
+			\hline
+			\textbf{Experimento} & \textbf{Masa \ce{H2O} (g)} & \textbf{\# inyecciones} & \textbf{Volumen inyectado ($\mu$L)}\\
+			\hline
+			1 & 2,41273 & 27 & 27 * 51,185 \\
+			2 & 2,49389 & 1 & 1382,0 \\
+			3 & 2,56668 & 1 & 1382,0 \\
+			\hline
+		\end{tabular}
+		\label{tb: propanolQuantity}
+	\end{table}
+	
+	%	Ad\~ao y colaboradores proponen tres m\'etodos para calcular la entalp\'ia de mezcla, todos los cuales hacen uso de inyecciones de 1-propanol en agua. En el primer m\'etodo, se calcula el promedio de las entalp\'ias indiviales por inyecci\'on, en el segundo se realiza una regresi\'on lineal donde en el eje $y$ se grafica la entalp\'ia de diluci\'on en funci\'on de la concentraci\'on, y el tercero calcula la entalp\'ia a partir de los coeficientes de interacci\'on ent\'alpicos \cite{adao2012chemical}. Ad\~ao y colaboradores estudian la dependencia de estos valores con la concentraci\'on las cuales se encuentran entre 2 \%, 5 \% y 
+	%	
+	%	
+	%	 concentraci\'on realizan inyecciones con vol\'umenes entre 2 y 5 $\mu$L de soluciones de 1-propanol con concentraciones de 2 \%, 5 \% y 10 \% en fracci\'on de masa. Inicialmente, y dada la experiencia con la reacci\'on de neutralizaci\'on se procedi\'o a realizar una calibraci\'on qu\'imica adicionando 51,185 $\mu$L de 1-propanol por inyecci\'on (pureza 99.8 \% LiChrosolv para cromatograf\'ia l\'iquida) a la celda de medici\'on que contaba con 1.6235 g de agua tipo 1.
+	%	\begin{figure}[h]
+	%		\centering
+	%		\includegraphics[width=\linewidth]{../Data/ChemicalCalibrations/concentratedPropanol}
+	%		\caption{Resultados obtenidos para la mezcla de agua con 1-propanol concentrado, las inyecciones tienen lugar a partir del minuto 200.}
+	%		\label{fig: CPropanolResults}
+	%	\end{figure}
+	
+	
+	El m\'etodo experimental procedi\'o de la misma forma que en la \autoref{sec: method}, sin embargo como se muestra en la \autoref{fig: CPropanolResults}, luego de la primera inyecci\'on el sistema se satur\'o imposibilitando, nuevamente la cuantificaci\'on de la potencia generada. Una vez se determin\'o que el calor\'imetro hab\'ia detectado, pero no cuantificado la disoluci\'on, se procedi\'o preparar una soluci\'on 2,96 \% de 1-propanol. Para esto se disolvieron 1,0290 g de 1-propanol en 33.6457 g de agua, y su densidad fue de un valor de 0.993487 g/cm$^{3}$. Con el objetivo de limitar el efecto del sistema de inyecci\'on sobre las potencias registradas, para este experimento se realizaron 30 inyecciones con 1 minuto de espera entre cada una de ellas, adem\'as de ignorar la calibraci\'on est\'atica, pues hab\'ia sido realizada previamente. Los resultados se muestra en la \autoref{fig: singleInjection}, para realizar la integral se toman en cuenta el estado del calor\'imetro antes y despu\'es de las inyecciones, a partir de estas se obtiene la linea base durante las inyecciones (l\'inea naranja). Posteriormente, se realiza la resta de la se\~nal de potencia con la linea base para obtener que esta se encuentre justo sobre el cero (l\'inea verde), y finalmente se integran los datos num\'ericamente usando la regla del trapecio \cite{landau2008survey} implementado en la librer\'ia \texttt{numpy} de Python \cite{walt2011numpy}.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{../Data/ChemicalCalibrations/singlePropanol}
+		\caption{Resultados obtenidos para la mezcla de agua con 1-propanol 2,96\%.}
+		\label{fig: singleInjection}
+	\end{figure}
+	
+	\subsection{Resultados}
+	La masa de 1-propanol contenida en cada volumen de inyecci\'on $V_\text{iny}$ est\'a determinada por:
+	\begin{equation}
+	m_p = \%m\rho V
+	\end{equation}
+	
+	La energ\'ia transferida en forma de calor corresponde con: 149.2 mJ. Ahora, considerando la densidad de la soluci\'on y el volumen de inyecci\'on se tiene que por cada una se introducen:
+
+\section{Calibraci\'on con HCl y \ce{KHCO3}}\label{sec: soluciones}
+	Para la preparaci\'on de las soluciones de HCl y \ce{KHCO3} y 1-propanol, se hace uso de forma sistem\'atica de una balanza Ohaus Analytical Plus (AP250D) y un dens\'imetro Anton Paar DSA5000M. La balanza presenta incertidumbres de $1\times10^{-5}$ y $1\times10^{-4}$ g dependiendo del rango usado, para el primer caso la masa medida debe ser inferior a 80 g y en el segundo no puede superar los 250 g, siendo esta la capacidad máxima de la balanza. En el caso del densímetro, son necesarios volúmenes cercanos a 2 mL de una soluci\'on, con esto el equipo determina la densidad de la sustancia con incertidumbres de $1\times10^{-6}$ g/cm$^{-3}$ para una temperatura determinada por el usuario. Adem\'as, en el proceso de preparaci\'on se hace necesaria la toma de dos al\'icuotas de 30 $\mu$L y 170 $\mu$L, para el HCl y \ce{KHCO3} correspondientemente, por lo cual se usa una micropipeta pipet4u Performance con rango de 20 a 200 $\mu$L, que en el rango trabajado tienen precisiones superiores al 99.4 \% \cite{pipet4u}.
 	
 	\subsection{Soluci\'on de HCl 0.25 mM}
-		Para determinar la concentraci\'on de una soluci\'on de 1,0 mL de HCl concentrado en 25,0 mL de agua tipo 1, se midi\'o la densidad de la soluci\'on, posteriormente usando como referencia los datos reportados en la literatura fue realizada una regresi\'on lineal que permiti\'o relacionar la concentraci\'on con la densidad de la soluci\'on $\rho$ \cite{perry2007perry}. De esta manera se estableci\'o el valor de la concentraci\'on en: $3.02 \pm 0.05$ \% (fracci\'on de masa $[w_t]$), donde la incertidumbre se obtiene de la pendiente ($m$) e intercepto ($b$) de la regresi\'on lineal que se muestra en la \autoref{fig: HCl_density}.
+		Para determinar la concentraci\'on de una soluci\'on de 1,0 mL de HCl concentrado en 25,0 mL de agua tipo 1, se midi\'o la densidad de la soluci\'on, posteriormente, usando como referencia los datos reportados en la literatura, fue realizada una regresi\'on lineal que permiti\'o relacionar la concentraci\'on con la densidad de la soluci\'on $\rho$ \cite{perry2007perry}. De esta manera se estableci\'o el valor de la concentraci\'on en: $3.02 \pm 0.05$ \% (fracci\'on de masa $[w_t]$), donde la incertidumbre se obtiene de la pendiente ($m$) e intercepto ($b$) de la regresi\'on lineal que se muestra en la \autoref{fig: HCl_density}.
 		\begin{equation}
 			\delta [w_t] = \sqrt{\left(\dfrac{\rho-b}{m^2}\delta m\right)^2 + \left(\dfrac{\delta b}{m}\right)^2 + \left(\dfrac{\delta \rho}{m}\right)^2}
 		\end{equation}
@@ -44,7 +193,7 @@
 			\delta [M] = [M]\sqrt{\delta[w_t]^2 + \delta\rho^2} 
 		\end{equation}
 		
-		Una al\'icuota de 0,0297 g de esta soluci\'on fue disuelta en 99,5553 g de agua, dando lugar a una soluci\'on 0,2469 mM. Donde la concentraci\'on final se calcula a partir de las densidades de las soluciones inicial ($\rho_s$) y final ($\rho_f$), las masas de agua ($m_\text{\ce{H2O}}$) y de soluci\'on inicial ($m_s$) usando la siguiente ecuaci\'on:
+		Una al\'icuota de 0,0297 g de esta soluci\'on fue disuelta en 99,5553 g de agua, dando lugar a una soluci\'on 0,2469 mM. En la cual, la concentraci\'on final se calcula a partir de las densidades de las soluciones inicial ($\rho_s$) y final ($\rho_f$), las masas de agua ($m_\text{\ce{H2O}}$) y de soluci\'on inicial ($m_s$) usando la \autoref{eq: concentracion_f}:
 		\begin{equation}\label{eq: concentracion_f}
 			[M]_f = [M]_i\dfrac{V_s}{V_f} = [M_i]\dfrac{m_s/\rho_s}{(m_s + m_{\text{\ce{H2O}}})/\rho_f} =  [M]_i\left(\dfrac{m_s}{m_s + m_{\text{\ce{H2O}}}}\right)\left(\dfrac{\rho_s}{\rho_f}\right)
 		\end{equation}
@@ -57,14 +206,14 @@
 		[M] = \dfrac{n}{V} = \dfrac{m\rho}{m_m(m + m_{\ce{H2O}})}
 	\end{equation}
 
-	Obteniendo un valor de $0.10131\pm 0.00001$ M, donde la incertidumbre se calcula usando:
+	Obteniendo un valor de $0.10131\pm 0.00001$ M, para la cual la incertidumbre se calcula usando:
 	\small
 	\begin{equation}
 		\delta[M] = \sqrt{\frac{m^{2}}{m_m^{2} \left(m + m_{\text{\ce{H2O}}}\right)^{2}}\delta\rho^{2} + \frac{\rho^{2} m_{\text{\ce{H2O}}}^{2}}{m_m^{2} \left(m + m_{\text{\ce{H2O}}}\right)^{4}}\delta m^{2} + \frac{\rho^{2} m^{2}}{m_m^{2} \left(m + m_{\text{\ce{H2O}}}\right)^{4}}\delta{m_{\text{\ce{H2O}}}}^{2}}
 	\end{equation}
 	\normalsize
 	
-	Posteriormente se tom\'o una al\'icuota de 0,1709 g, la cual fue dilu\'ida en 99,5657 g de agua. Usando la \autoref{eq: concentracion_f}, se obtiene una concentraci\'on de 0,17265 mM. El resumen de las cantidades usadas para la diluci\'on de las soluciones de \'acido y bicarbonato, as\'i como las densidades obtenidas a 20 $^\circ$C se muestran en la \autoref{tb: concentracion_f}.
+	Posteriormente se tom\'o una al\'icuota de 0,1709 g, que fue dilu\'ida en 99,5657 g de agua. Usando la \autoref{eq: concentracion_f}, se obtiene una concentraci\'on de 0,17265 mM. El resumen de las cantidades usadas para la diluci\'on de las soluciones de \'acido y bicarbonato, as\'i como las densidades obtenidas a 20 $^\circ$C se muestran en la \autoref{tb: concentracion_f}.
 	\begin{table}[h]
 		\centering
 		\caption{Densidades y masas medidas para preparar las soluciones con concentraciones 0,25 mM y 0,17 mM para el HCl y \ce{KHCO3} correspondientemente.}
@@ -80,109 +229,51 @@
 		\label{tb: concentracion_f}
 	\end{table}
 	
-\section{Sistema de inyecci\'on}
-	El sistema de inyecci\'on consiste en un motor de pasos acoplado a un tornillo de precisión, el cual controla el desplazamiento del émbolo de la jeringa de inyección. El fluido saliente de la jeringa se desvía usando una manguera de cromatografía líquida de acero inoxidable, el cual se conecta en el otro extremo a un canal que lleva el fluido hasta la celda de medición.
 	
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=0.5\linewidth]{Figures/sistemaInyeccion}
-			
-		\caption{Sistema de inyección construido como alternativa al uso de las canulas.}
-		\label{fig: sistemaInyeccion}
-	\end{figure}
-	
-	Tanto la aguja de la jeringa como la manguera de cromatografía, corresponden con una alternativa para ingresar el fluido hasta la celda que difiere del mecanismo original en los volúmenes usados y el tipo de jeringas. Originalmente, para introducir una sustancia en la celda se hace uso de una jeringa de vidrio Hammilton de 250 $\mu$L la cual cuenta con una canula soldada en la punta de esta. Al momento de realizar el experimento, no se contaba con una jeringa de este tipo con la canula conectada, y a pesar que varios intentos fueron realizados para soldar la punta con la canula de oro y acero inoxidable no fue posible juntar las partes, en parte dado que el diámetro de la canula es considerablemente pequeño, siendo difícil de ver a simple vista. Lo anterior tiene consideraciones especiales, pues los diámetros de la jeringa y la manguera no son compatibles, por lo cual se hace necesario usar cinta de teflón para evitar al máximo fugas en el sistema. Además el volumen interno de la manguera cromatogr\'afica es mucho mayor al de la canula, por lo cual se debe tener especial cuidado por los volúmenes introducidos, pues no se debe exceder la capacidad de 4 mL de la celda.
-	
-	\subsection{Control por automatizado}\label{ssec: jeringa}
-	Para acceder al control de la jeringa, en el menú superior: \texttt{System > Auxiliary > Pump}. En el momento se cuenta con un único agitador para la celda, por lo cual sólo se encuentra instalado uno de los controladores de jeringa tipo \texttt{Lund}, por esta razón el sistema debe detectar automáticamente únicamente el primer controlador (\texttt{Installed = yes}). La configuración de una jeringa consiste en escribir el volumen de esta (\texttt{Syringe volume}), la velocidad con la que se quiere mover el émbolo (\texttt{Plunger speed}), su longitud (\texttt{Syringe length}) y el volumen por inyección (\texttt{Dispense volume}).
-	
-	\begin{figure}[h]
-		\centering
-		\begin{subfigure}[b]{0.4\textwidth}
-			\includegraphics[width=\linewidth]{Figures/jeringa_menu}
-			\caption{Ingreso al menú.}
-			\label{fig: menuJeringa}
-		\end{subfigure}
-		\begin{subfigure}[b]{0.55\textwidth}
-			\includegraphics[width=\linewidth]{Figures/jeringa_config}
-			\caption{Menú de configuración}
-			\label{fig: configJeringa}
-		\end{subfigure}
-		\caption{Configuración de la jeringa en Digitam.}
-	\end{figure}
-	
-	Una vez se encuentra configurada la jeringa, es posible usarla de dos maneras distintas. Por un lado se tiene el modo manual, donde el usuario tiene la posibilidad de avanzar rápidamente (\texttt{Fast forward}), por ejemplo para disminuir al distancia entre el émbolo y el pistón. También es posible aumentar esta distancia (\texttt{Fast backward}), avanzar un milímetro (\texttt{One milimeter forward}) y moverse la distancia requerida para que la jeringa dispense el volumen por inyección (\texttt{Dispense}). El control manual resulta útil antes de iniciar un experimento, pues con frecuencia será necesario ajustar la distancia entre el pistón y el émbolo para que haya contacto. Además en el caso de ser requerida una calibración de la jeringa es posible usar el botón de dispensar para determinar si el volumen dispensado corresponde con el volumen configurado.
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=0.5\linewidth]{Figures/jeringa_manual}
-		\caption{Panel del uso manual del controlador de la jeringa.}
-		\label{fig: manualJeringa}
-	\end{figure}
-
-	El modo automático se configura al momento de definir el método del experimento. Para esto es necesario expandir la opción de \texttt{Auxiliary system} en el panel izquierdo del menú y seleccionar ítem \texttt{Pump and flow control}. Se debe tener en cuenta la sección del experimento que se está configurando. En el caso de la \autoref{fig: autoJeringa}, sólo existe la sección de \texttt{Baseline}, en esta sección se busca realizar 20 inyecciones cada una con el volumen de dispensación y velocidad configurados en la \autoref{fig: configJeringa} y 300 segundos de espera entre cada inyección.
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=0.5\linewidth]{Figures/jeringa_experimento}
-		\caption{Panel de configuración de la jeringa en modo automático.}
-		\label{fig: autoJeringa}
-	\end{figure}
-	
-	\subsection{Calibraci\'on de la jeringa}
-		Si bien el volumen de una jeringa es bien conocido, la longitud del émbolo es un parámetro que con frecuencia no se encuentra fácilmente. El controlador de la jeringa depende de este valor para relacionar la longitud que debe expandir el pistón para dispensar el volumen $V_d$. Por esta razón, para determinar la longitud correcta de la jeringa que debe ser configurada, se usaron distintos valores de esta y se midió la masa de agua tipo 1 desplazada, para cada valor de longitud se tomaron 3 medidas, los cuales se muestran en la \autoref{tb: syringeCal}.
-		\begin{table}[h]
-			\centering
-			\caption{Masa dispensada por la jeringa usando diferentes longitudes y un $V_d = 100.000$ $\mu$L}
-			\small
-			\begin{tabular}{p{1.7cm}|p{1.3cm}p{1.3cm}p{1.3cm}|p{2cm}p{2cm}}
-				\hline
-				\textbf{Longitud (mm)} &  \textbf{Masa 1 (g)} &  \textbf{Masa 2} (g) &  \textbf{Masa 3 (g)} &  \textbf{Promedio (g)} & \textbf{Desviacion (g)} \\
-				\hline
-				28,000 & 0,08194 & 0,08196 & 0,08262 & 0,0822 & 0,0004 \\
-				29,000 & 0,08573 & 0,08673 & 0,08648 & 0,0863 & 0,0005 \\
-				30,000 & 0,09003 & 0,08884 & 0,08970 & 0,0895 & 0,0006 \\
-				31,000 & 0,09270 & 0,09322 & 0,09263 & 0,0928 & 0,0003 \\
-				32,000 & 0,09551 & 0,09536 & 0,09538 & 0,0954 & 0,0001 \\
-				33,000 & 0,09895 & 0,09825 & 0,09870 & 0,0986 & 0,0004 \\
-				34,000 & 0,10172 & 0,10176 & 0,10137 & 0,1016 & 0,0002 \\
-				35,000 & 0,10409 & 0,10318 & 0,10422 & 0,1038 & 0,0006 \\
-				36,000 & 0,10679 & 0,10593 & 0,10757 & 0,1068 & 0,0008 \\
-				37,000 & 0,10958 & 0,11015 & 0,10993 & 0,1099 & 0,0003 \\
-				38,000 & 0,11384 & 0,11327 & 0,11360 & 0,1136 & 0,0003 \\
-				\hline
-			\end{tabular}
-			\label{tb: syringeCal}
-		\end{table}
-		
-		\begin{figure}[h]
-			\centering
-			\includegraphics[width=\linewidth]{../Data/Syringe/syringe_cal.png}
-			\caption{Curva de calibraci\'on de la jeringa usada.}
-			\label{fig: syringeCal}
-		\end{figure}
-	
-		Con el termómetro de mercurio usado en la calibración térmica de los sensores de temperatura se midió la temperatura del agua usada en la calibración de la jeringa, dando un valor de 17.7 $^\circ$C. El densimetro usado en la \autoref{sec: soluciones} fue configurado para realizar una lectura a esta misma temperatura, con lo cual se obtuvo un valor de densidad de 0.998679 g/cm$^3$. Con esta información es posible construir una curva que permite inferir la configuración a usar de la jeringa, esta curva junto con el valor escogido se muestran en la \autoref{fig: syringeCal}. Para un volumen de dispensación de 100 $\mu$L, se obtuvo una longitud de 33,213 mm.
-		\newline
-	
-\section{Realizaci\'on del experimento}
+\subsection{Realizaci\'on del experimento}\label{sec: method}
 	El m\'etodo experimental est\'a dividido en cuatro partes:
 	\begin{enumerate}
 		\item \textbf{Pause}: En la etapa inicial del experimento se busca medir el estado de la línea base por 120 minutos consecutivos.
-		\item \textbf{Baseline}: Luego de tener datos sobre el estado sin perturbar del sistema, se realiza una calibración dinámica para realizar un ajuste fino de los parámetros de ganancia y nivel del cero de la señal. 
+		\item \textbf{Baseline}: Luego de tener datos sobre el estado sin perturbar del sistema, se realiza una calibración dinámica para obtener un ajuste fino de los parámetros de ganancia y nivel del cero de la señal. 
 		\item \textbf{Pause:} En este punto se realiza una calibraci\'on est\'atica para confirmar que la calibraci\'on din\'amica fue correcta. Para esto, se aplican 300 $\mu$W sobre la celda por 30 minutos, posteriormente se retira la potencia y se esperan 50 minutos para la estabilizaci\'on de la linea base.
 		\item \textbf{Main:} Una vez estabilizada la linea base, se realizan 30 inyecciones sucesivas con 10 minutos de espera entre cada inyecci\'on, la velocidad de inyecci\'on es de 50,018 $\mu/s$ y el volumen de inyecci\'on es de 51,185 $\mu$L.
 	\end{enumerate}
 
-	En la celda de medición fueron adicionados 1.6029 g de la solución de \ce{KHCO3} 0.17265 mM, y la jeringa fue cargada con 2.0 mL de la soluci\'on de HCl 0.2469 mM, y la temperatura del ba\~no t\'ermico se mantuvo en $25.05 \pm $ $^\circ$C a lo largo del experimento. 
+	En la celda de medición fueron adicionados 1,6029 g de la solución de \ce{KHCO3} 0,17265 mM, y la jeringa fue cargada con 2,0 mL de la soluci\'on de HCl 0,2469 mM, ambas soluciones fueron desgasificadas por 15 minutos a 44 \grad{} en un sonicador, adem\'as, la temperatura del ba\~no t\'ermico se mantuvo en $25.05 \pm 0.06$ $^\circ$C a lo largo del experimento.
 	
-\section{Resultados}
-	Para obtener la entalp\'ia de la reacci\'on se integra la potencia registrada para cada inyecci\'on, y se toma la diferencia entre la as\'intota inicial y final, cuyo valor corresponde con la entalp\'ia total. Posteriormente, la entalp\'ia se divide por el n\'umero de moles del titulante usado, dando lugar a la entalp\'ia molar. 
-	
-	En el punto de equivalencia se tiene que la pendiente corresponde con la constante de afinidad, para la cual se cumple la siguiente relaci\'on: 
-	\begin{equation}
-		\Delta G = -RT\ln K
+\subsection{Resultados}
+	Considerando un proceso a presi\'on constante, se tiene una expresi\'on que relaciona la potencia con la entalp\'ia por inyecci\'on, donde el signo negativo en la \autoref{eq: heat} viene de la polarizaci\'on del equipo, lecturas de potencia positivas corresponden con reacciones exot\'ermicas:
+	\begin{equation}\label{eq: heat}
+		\int\limits_t^{t + \Delta t_\text{iny}} Pdt = Q_\text{iny} = -\Delta H_\text{iny}
 	\end{equation}
 	
-	A partir de lo anterior se obtiene el cambio en la energ\'ia libre de Gibbs, lo cual a su vez permite determinar la entrop\'ia, pues de la definici\'on de esta junto con la primera ley de la termodin\'amica de la termodin\'amica se obtiene:
+	Sin embargo
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{../Data/ChemicalCalibrations/HCl}
+		\caption{Las se\~nales entre 0 y 100 minutos, corresponden con una calibraci\'on din\'amica y est\'atica. Posteriormente, las 2 inyecciones.}
+		\label{fig: HClResults}
+	\end{figure}
+
+	Dado que el calor\'imetro registra valores de potencia y esta corresponde con energ\'ia por unidad de tiempo, es necesario integrar en el tiempo la se\~nal obtenida para cada inyecci\'on, de esta manera se determina el calor generado por cada una de estas. Adem\'as, de la primera ley de la termodin\'amica se tiene que $U = Q - \int pdV$ y $H\equiv U+pV$, la entalp\'ia est\'a dada por:
+	\begin{equation}
+		\Delta H = Q + V\Delta p
+	\end{equation}
+	
+	
+	
+	Para obtener la entalp\'ia de la reacci\'on se grafican las entalp\'ias de inyecci\'on en funci\'on de la raz\'on molar, y se toma la diferencia entre la as\'intota inicial y final, cuyo valor corresponde con la entalp\'ia total de la reacci\'on \cite{nanoitc}. Posteriormente, para determinar la entalp\'ia molar se divide el resultado anterior por el n\'umero de moles de titulante usado. Por otro lado se tiene que en el punto de equivalencia la pendiente corresponde con la constante de afinidad, para la cual se cumple la siguiente relaci\'on \cite{matsuyama2017isothermal, velazquez2006isothermal, nanoitc}: 
+	\begin{equation}\label{eq: gibbs}
+		\Delta G = -RT\ln K_a
+	\end{equation}
+	
+	Donde $K_a$ se denomina la constante de afinidad y se obtiene del equilibrio de la reacci\'on:
+	\begin{equation}
+		\ce{KHCO3(ac) + HCl(ac) <=>[K_a] H2O(l) + KCl(ac) + CO2(g)}
+	\end{equation}
+	
+	Usando la \autoref{eq: gibbs} se obtiene el cambio en energ\'ia libre de Gibbs, lo cual a su vez permite determinar la entrop\'ia, pues de la definici\'on de esta junto con la primera ley de la termodin\'amica se obtiene:
 	\begin{equation}
 		G \equiv H - TS = (U + pV) - TS
 	\end{equation}
@@ -195,7 +286,12 @@
 		\end{matrix}
 	\end{equation}
 	
-	Lo cual para condiciones isot\'ermicas y cambios grandes se reduce a: $\Delta G = \Delta H - T\Delta S$, de donde se obtiene:
+	Lo cual para condiciones isot\'ermicas y cambios grandes ($d \rightarrow \Delta$) se reduce a: $\Delta G = \Delta H - T\Delta S$, de donde se obtiene:
 	\begin{equation}
 		\Delta S = \dfrac{\Delta H - \Delta G}{T}
 	\end{equation}
+	
+	Para poder calcular las cantidades mencionadas anteriormente, es necesario obtener la potencia de cada inyecci\'on, sin embargo, como se observa en la \autoref{fig: HClResults}, existe una segunda inyecci\'on (10 minutos despu\'es que la otra) que registra una gran potencia, posterior a esta se desequilibra el calor\'imetro.
+
+	La energ\'ia medida en las inyecciones se calcula con la \autoref{eq: heat}. Entre $t = 127$ min, hasta $t + \Delta T=141$ min, como se muestra en color nar\'anja en la \autoref{fig: HClResults}, dando lugar a un valor de 45,88 mJ. Considerando ahora que se agregaron 102,37 $\mu$L (2 inyecciones) de una soluci\'on 0,2469 mM de HCl, fueron adicionados 25,28 nmoles de HCl, por lo cual se tiene que $Q = \Delta H = -1815$ kJ/mol, valor que es muy superior al esperado de $-9.0 \pm 0.9$ kJ/mol \cite{nanoitc}. Adem\'as, dicho resultado no explica la desestabilizaci\'on posterior del calor\'imetro, as\'i como la no observaci\'on de m\'as inyecciones. Por lo cual se procedi\'o a probar el sistema la disoluci\'on de propanol en agua.
+	
