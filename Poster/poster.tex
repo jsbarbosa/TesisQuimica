@@ -1,6 +1,7 @@
 \documentclass[a0]{sciposter}
 \usepackage{lipsum}
 \usepackage{epsfig}
+\usepackage{mhchem}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{multicol}
@@ -11,7 +12,7 @@
 \usepackage[backend=bibtex, style=chem-acs, natbib=true]{biblatex} 
 
 \addbibresource{../Tesis/bibliography.bib} % The filename of the bibliography
-\AtBeginBibliography{\small}
+\AtBeginBibliography{\footnotesize}
 
 \newcommand{\groupname}{\textbf{Termodinámica de Soluciones}}
 \newcommand{\grad}{$^\circ$C}
@@ -102,12 +103,14 @@
 		\caption{Efecto de la temperatura ambiente sobre la temperatura del baño interno a $25.02\pm0.03$ \grad{}. La escala para las curvas azules se encuentra al lado derecho.}
 	\end{figure}
 	
-	La temperatura interna del calorímetro se encuentra correlacionada con la temperatura ambiente, los máximos de temperatura interna ocurren en los mínimos de temperatura ambiente. Esta correlaci\'on es cuantificada con el coeficiente de correlaci\'on entre los datos $i, j$ se calcula usando la entrada $i,j$ de la matriz de covarianza asociada \cite{landau2008survey}.
-	\begin{equation}
-		c = \dfrac{\text{cov}(i, j)}{\sigma_i\sigma_j} = \dfrac{E((\mathbf{x_i} - 	\bar{x}_i)(\mathbf{x_j} - \bar{x}_j))}{\sigma_i\sigma_j}
-	\end{equation}
+	La temperatura interna del calorímetro se encuentra correlacionada con la temperatura ambiente, los máximos de temperatura interna ocurren en los mínimos de temperatura ambiente. Esta correlaci\'on fue cuantificada con un coeficiente de correlaci\'on de -0.77.
 	
-	Donde $E$ es la funci\'on que retorna el valor esperado de un vector ($\bar{x}_i = E(\mathbf{x_i})$ promedio), se obtiene $c = -0.77$. 
+%	Esta correlaci\'on es cuantificada con el coeficiente de correlaci\'on entre los datos $i, j$ se calcula usando la entrada $i,j$ de la matriz de covarianza asociada \cite{landau2008survey}.
+%	\begin{equation}
+%		c = \dfrac{\text{cov}(i, j)}{\sigma_i\sigma_j} = \dfrac{E((\mathbf{x_i} - 	\bar{x}_i)(\mathbf{x_j} - \bar{x}_j))}{\sigma_i\sigma_j}
+%	\end{equation}
+%	
+%	Donde $E$ es la funci\'on que retorna el valor esperado de un vector ($\bar{x}_i = E(\mathbf{x_i})$ promedio), se obtiene $c = -0.77$. 
 
 \section{Calibraci\'on El\'ectrica}
 	Con el objetivo de asegurar que la información registrada por el calorímetro corresponde con un valor específico de potencia, es necesario realizar una calibración eléctrica.
@@ -134,12 +137,17 @@
 	\begin{equation}
 		\int\limits_t^{t+\Delta t_\text{iny}} Pdt = Q_\text{iny} = -\Delta_\text{iny}H
 	\end{equation}
-
+	
+	Para obtener la soluci\'on de 1-propanol al 2.96 \%p/p se mezclaron 1.0290 g de 1-propanol en 33.6457 g de agua tipo 1. Con esta soluci\'on, se realizaron dos experimentos con una \'unica inyecci\'on de 1.382 mL de 1-propanol a 2.5 mL de agua.
+	
 	\begin{figure}[h]
 		\centering
 		\includegraphics[width=\figwidth]{../Data/ChemicalCalibrations/singlePropanol}
 		\caption{Resultados obtenidos para la mezcla de 1-propanol 2.96\% con agua, en una \'unica inyecci\'on, $\Delta H$ = -221 y -201 kJ/mol.}
 	\end{figure}
+
+	Un tercer experimento se llev\'o a cabo realizando 27 inyecciones de 51.185 $\mu$L con tiempos de espera entre cada una de ellas de 5 minutos.
+	
 	\begin{figure}[h]
 		\centering
 		\begin{tabular}{cc}
@@ -147,18 +155,27 @@
 			\includegraphics[width=0.53\linewidth]{../Data/ChemicalCalibrations/multipleInt}
 		\end{tabular}
 		\caption{Resultados con inyecciones m\'ultiples de 1-propanol al 2.96 \%.}
-	\end{figure}	
+	\end{figure}
+
+	Para la reacci\'on \'acido base se prepar\'o una soluci\'on 0.247 mM de HCl, diluyendo 1.0 mL de una soluci\'on de HCl concentrada en 25 mL de agua, de esta soluci\'on se tomaron 0.0297 g los cuales se disolvieron en 99,5553 g de agua. Para el \ce{KHCO3} se agregaron 0.10143 g de \ce{KHCO3} a 9.93551 g de agua, y se diluyeron 0.1709 g de esta soluci\'on, en 99,5657 g de agua.
+
 	\begin{figure}[h]
 		\centering
 		\includegraphics[width=\figwidth]{../Data/ChemicalCalibrations/HCl}
-		\caption{Resultados para la neutralización del KHCO$_3$ 0.17265 mM, por el ácido 0.25 mM, $\Delta H$ = -254 kJ/mol.}
+		\caption{Resultados para la neutralización del {KHCO3}, $\Delta H$ = -254 kJ/mol.}
 	\end{figure}
+
+	\begin{equation}
+		\ce{KHCO3(ac) + HCl(ac) <=>[K_a] H2O(l) + KCl(ac) + CO2(g)}
+	\end{equation}
+
+	Usando la entalp\'ia reportada para la reacci\'on anterior se calcul\'o el factor calorim\'etrico en 28.
 	
 \section{Conclusiones}
 	Se realiz\'o la instalaci\'on del calorímetro adaptando el equipo a la red eléctrica colombiana. Además, se logró la comunicaci\'on del calor\'imetro con el computador eliminando la necesidad de puertos RS232, el funcionamiento del agitador fue optimizado al sustituir la conexión original a un puerto USB, y se caracteriz\'o el efecto del mismo sobre las lecturas calorim\'etricas. Los parámetros usados para estabilizar el calorímetro a 25 \grad{} fueron reportados, y se encontró el factor calorimétrico en 28.
 
 \printbibliography[heading=bibintoc, title={Referencias}]
 \section*{Agradecimientos}
-
+	Al profesor Edgar por su confianza y apoyo, y a Nicol\'as y Valeria por su buena disposici\'on.
 \end{multicols}
 \end{document}
