@@ -301,9 +301,9 @@
 \newcommand{\setmargins}[1][]{
   \ifthenelse{\equal{#1}{}}{
     \ifthenelse{\equal{\orientation}{landscape}}{
-      \setlength{\papermargin}{0.06\paperheight}
+      \setlength{\papermargin}{0.03\paperheight}
     }{
-      \setlength{\papermargin}{0.06\paperwidth}
+      \setlength{\papermargin}{0.03\paperwidth}
     }
   }{\setlength{\papermargin}{#1}}
   \setlength{\textwidth}{\paperwidth}
