@@ -41,7 +41,7 @@
 \begin{multicols}{3}
 
 \section{Introducci\'on}
-	Un calorímetro es un instrumento que permite detectar transferencias de energ\'ia en forma de calor y, mediante su uso, es posible determinar propiedades termodinámicas de interés químico, como lo son: la capacidad calorífica, entalpía, entropía, etc. El 2277 Thermal Activity Monitor es un calorímetro isotérmico que funciona usando el efecto Seebeck para cuantificar flujos de energía en forma de calor ($\mathbf{j}^q$). Este efecto, ante gradientes de temperatura sobre una celda Peltier genera una diferencia de potencial $\Delta V$ y una densidad de corriente $\mathbf{j}$ sobre la celda \cite{simon2013oxford}.
+	Un calorímetro es un instrumento que permite detectar transferencias de energ\'ia en forma de calor y, mediante su uso, es posible determinar propiedades termodinámicas de interés químico, tales como: la capacidad calorífica, entalpía, entropía, etc. El \textit{2277 Thermal Activity Monitor} es un calorímetro isotérmico que funciona usando el efecto Seebeck para cuantificar flujos de energía en forma de calor ($\mathbf{j}^q$). Este efecto, ante gradientes de temperatura sobre una celda Peltier genera una diferencia de potencial $\Delta V$ y una densidad de corriente $\mathbf{j}$ sobre la celda \cite{simon2013oxford}.
 	\begin{equation}\label{eq: peltier}
 		\mathbf{j}^q = \left(-T\dfrac{\mathbf{j}}{\Delta T}\right)\Delta V = k\Delta V
 	\end{equation}
@@ -58,7 +58,7 @@
 	En particular, el calorímetro mide la diferencia en los flujos de energía presentados por una celda de referencia que sirve como blanco, y otra en donde se encuentra la muestra.
 
 \section{Objetivos}
-	Poner en funcionamiento el calorímetro 2277 Thermal Activity Monitor, y adicionalmente calibrar el equipo para su uso en las investigaciones activas del grupo \groupname.
+	Poner en funcionamiento el calorímetro 2277 Thermal Activity Monitor, y adicionalmente calibrar el equipo para su uso en las investigaciones activas tanto de pregrado como posgrado.
 	\begin{enumerate}
 		\item Realizar el cableado y conexiones electrónicas pertinentes a la instalaci\'on del equipo 2277 Thermal Activity Monitor.
 		\item Mantener la temperatura del ba\~no interno estable a 25 \grad{}.
@@ -95,7 +95,7 @@
 	\end{figure}
 
 \section{Control de la temperatura}
-	La temperatura del baño interno del calorímetro se controla usando cuatro resistencias de década, junto con la temperatura de un baño externo. Encontrar la combinación de estos parámetros que permitiera estabilizar el calorímetro a 25 \grad{} requirió de un sistema de monitoreo de la temperatura en tiempo real. Este sistema fue construído usando un microcontrolador ATtiny13, y tres sensores LM35.
+	La temperatura del baño interno del calorímetro se controla usando cuatro resistencias de década, junto con la temperatura de un baño externo. Se encontr\'o la combinación de estos parámetros que permiten estabilizar el calorímetro a 25 \grad{} para esto se requirió de un sistema de monitoreo de la temperatura en tiempo real. Este sistema fue construído usando un microcontrolador ATtiny13, y tres sensores LM35.
 
 	\begin{figure}[h]
 		\centering
@@ -104,13 +104,6 @@
 	\end{figure}
 	
 	La temperatura interna del calorímetro se encuentra correlacionada con la temperatura ambiente, los máximos de temperatura interna ocurren en los mínimos de temperatura ambiente. Esta correlaci\'on fue cuantificada con un coeficiente de correlaci\'on de -0.77.
-	
-%	Esta correlaci\'on es cuantificada con el coeficiente de correlaci\'on entre los datos $i, j$ se calcula usando la entrada $i,j$ de la matriz de covarianza asociada \cite{landau2008survey}.
-%	\begin{equation}
-%		c = \dfrac{\text{cov}(i, j)}{\sigma_i\sigma_j} = \dfrac{E((\mathbf{x_i} - 	\bar{x}_i)(\mathbf{x_j} - \bar{x}_j))}{\sigma_i\sigma_j}
-%	\end{equation}
-%	
-%	Donde $E$ es la funci\'on que retorna el valor esperado de un vector ($\bar{x}_i = E(\mathbf{x_i})$ promedio), se obtiene $c = -0.77$. 
 
 \section{Calibraci\'on El\'ectrica}
 	Con el objetivo de asegurar que la información registrada por el calorímetro corresponde con un valor específico de potencia, es necesario realizar una calibración eléctrica.
@@ -157,7 +150,7 @@
 		\caption{Resultados con inyecciones m\'ultiples de 1-propanol al 2.96 \% (p/p).}
 	\end{figure}
 
-	Para la reacci\'on \'acido base se prepar\'o una soluci\'on 0.247 mM de HCl, diluyendo 1.0 mL de una soluci\'on de HCl concentrada en 25 mL de agua, de esta soluci\'on se tomaron 0.0297 g los cuales se disolvieron en 99,5553 g de agua. Para el \ce{KHCO3} se agregaron 0.10143 g de \ce{KHCO3} a 9.93551 g de agua, y se diluyeron 0.1709 g de esta soluci\'on, en 99,5657 g de agua.
+	Para la reacci\'on \'acido base se prepar\'o una soluci\'on 0.247 mM de HCl a partir de HCl 0.84 M. La preparaci\'on de la soluci\'on 0.17265 mM de \ce{KHCO3} consisti\'o en la disoluci\'on del s\'olido en agua.
 
 	\begin{figure}[h]
 		\centering
