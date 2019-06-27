@@ -337,7 +337,7 @@ KOMA-script documentation for details.}]{fancyhdr}
 %	ABSTRACT PAGE DESIGN
 %----------------------------------------------------------------------------------------
 
-\DeclareDocumentCommand{\abstractauthorfont}{}{}
+\DeclareDocumentCommand{\authorfont}{}{}
 \DeclareDocumentCommand{\abstracttitlefont}{}{}
 \newcommand{\byname}{by}
 \newcommand{\abstractname}{Abstract}
@@ -345,7 +345,7 @@ KOMA-script documentation for details.}]{fancyhdr}
 \providecaptionname{american,australian,british,canadian,english,newzealand,UKenglish,USenglish}{\byname}{by}
 \ifbool{consistentlayout}{
 	\DeclareDocumentEnvironment{abstract}{ O{} }{%
-		\addchap*{\abstractname}%
+		\addchap*{Abstract}%
 		{\chapteralign\normalsize\abstractauthorfont \authorname \par}% Author name
 		\vspace{\baselineskip}
 		{\chapteralign\parbox{.7\linewidth}{\chapteralign\normalsize\itshape\abstracttitlefont\@title}\par}% Thesis title
@@ -355,20 +355,20 @@ KOMA-script documentation for details.}]{fancyhdr}
 }{%
 	\DeclareDocumentEnvironment{abstract}{ O{\null\vfill} }{
 		\checktoopen
-		\tttypeout{\abstractname}
+		\tttypeout{Abstract}
 		#1%added to be able to have abstract more than one page long
 		\thispagestyle{plain}
 		\begin{center}
 			{\normalsize \MakeUppercase{\univname} \par}% University name in capitals
 			\bigskip
-			{\huge\textit{\abstractname} \par}
+			{\huge\textit{Abstract} \par}
 			\bigskip
 			{\normalsize \facname \par}% Faculty name
 			{\normalsize \deptname \par}% Department name
 			\bigskip
 			{\normalsize \degreename\par}% Degree name
 			\bigskip
-			{\normalsize\bfseries \@title \par}% Thesis title
+			{\normalsize\bfseries Start-up and calibration of a ThermoMetric 2277 calorimeter \par}% Thesis title
 			\medskip
 			{\normalsize \byname{} \authorname \par}% Author name
 			\bigskip
@@ -540,5 +540,42 @@ breaklinks=true,
 
 %----------------------------------------------------------------------------------------
 
+\ifbool{consistentlayout}{
+	\DeclareDocumentEnvironment{resumen}{ O{} }{%
+		\addchap*{Resumen}%
+		{\chapteralign\normalsize\abstractauthorfont \authorname \par}% Author name
+		\vspace{\baselineskip}
+		{\chapteralign\parbox{.7\linewidth}{\chapteralign\normalsize\itshape\abstracttitlefont\@title}\par}% Thesis title
+		\bigskip\noindent\ignorespaces
+	}%
+	{}%end alt-abstract
+}{%
+	\DeclareDocumentEnvironment{resumen}{ O{\null\vfill} }{
+		\checktoopen
+		\tttypeout{Resumen}
+		#1%added to be able to have abstract more than one page long
+		\thispagestyle{plain}
+		\begin{center}
+			{\normalsize \MakeUppercase{\univname} \par}% University name in capitals
+			\bigskip
+			{\huge\textit{Resumen} \par}
+			\bigskip
+			{\normalsize \facname \par}% Faculty name
+			{\normalsize \deptname \par}% Department name
+			\bigskip
+			{\normalsize \degreename\par}% Degree name
+			\bigskip
+			{\normalsize\bfseries \@title \par}% Thesis title
+			\medskip
+			{\normalsize por \authorname \par}% Author name
+			\bigskip
+		\end{center}
+	}
+	{
+		\vfill\null
+	}
+}
+
+%\endinput
 \endinput
 % lazyLizardTracer
