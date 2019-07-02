@@ -270,6 +270,7 @@ class SystemTrayIcon(QSystemTrayIcon):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     QApplication.setStyle(QStyleFactory.create('Fusion'))
+    icon = QtGui.QIcon(':/icon.ico')
     app.setWindowIcon(icon)
     app.processEvents()
 
